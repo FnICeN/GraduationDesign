@@ -30,7 +30,7 @@ class GetSentenceVec:
         stop_words = pd.read_csv(path + "\\GraduationDesign\\语料库\\stopwords.dat", delimiter="\t", header=None, quoting=3, encoding='utf-8')
         stop_words = stop_words[0].tolist()
         # 若是多个句子，则返回嵌套列表
-        if type(self.data[0]) == list:
+        if len(self.data) > 1:
             res = []
             for sentence in self.data:
                 res.append([word for word in jieba.cut(sentence) if word not in stop_words and word !=' '])
