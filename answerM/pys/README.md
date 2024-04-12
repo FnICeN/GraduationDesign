@@ -1,0 +1,3 @@
+# LSTM
+
+文章原文是编写了embedding层，在调节层先maxpooling再tanh的，此时已实现降维；而本代码则是简单求平均得句向量实现降维
