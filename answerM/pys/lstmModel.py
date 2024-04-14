@@ -1,8 +1,7 @@
-from itertools import count
-from random import randint
 import torch
 import torch.nn as nn
-import numpy as np
+from torch.utils.data import DataLoader
+from utils.DataProcess import MyDataset
 import trainRela.MyLoss as ml
 
 M = 0.1
@@ -16,25 +15,21 @@ class LSTMModel(nn.Module):
         _, (hidden, _) = self.lstm(input)
         output = self.hidden2out(hidden[-1])
         return output
-    def train(self, q_data, ans_data, batch_size, epochs):
+    def train(self, data_path, batch_size, epochs):
         # criterion = nn.CosineEmbeddingLoss(margin = M)
         criterion = ml.Margin_Cosine_ReductionLoss(M)
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
-        neg_data = self.getNegSample(ans_data)
+        dataset = MyDataset(data_path)
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
         # 将data按照batch_size划分并训练epochs次
         for i in range(epochs):
             optimizer.zero_grad()
-            acc_sum = 0
-            for j in range(0, len(q_data), batch_size):
-                q_input = np.array(q_data[j:j+batch_size])
-                ans_input = np.array(ans_data[j:j+batch_size])
-                neg_input = np.array(neg_data[j:j+batch_size])
-                # 将输入转换为tensor
-                q_input = torch.tensor(q_input).float()
-                ans_input = torch.tensor(ans_input).float()
-                neg_input = torch.tensor(neg_input).float()
-
-                # print(q_input.shape)
+            acc_per_batch_record = []
+            avg_acc_per_epoch_record = []
+            for q_input, ans_input, neg_input in dataloader:
+                q_input = q_input.float()
+                ans_input = ans_input.float()
+                neg_input = neg_input.float()
                 # 执行预测
                 q_output, (_, _) = self.lstm(q_input)
                 ans_output, (_, _) = self.lstm(ans_input)
@@ -53,31 +48,19 @@ class LSTMModel(nn.Module):
                 # print(q_output.shape)
                 losses, loss = criterion(q_output, ans_output, neg_output)
                 # 计算正确率
-                acc_sum += self.getAccuracy(losses)
+                acc_per_batch_record.append(self.getAccuracy(losses))
                 loss.backward()
                 optimizer.step()
+            avg_acc_per_epoch_record.append(sum(acc_per_batch_record) / len(acc_per_batch_record))
             if (i + 1) % 10 == 0:
                 print(f'Epoch { i + 1 }/{ epochs }, Loss: { loss.item() }')
                 # 输出accuracy
                 # print(f'Accuracy: { self.getAccuracy(correct, batch_size) }')
-                print("以上10轮平均正确率:", acc_sum / 10)
+                print("以上10轮平均正确率:", sum(avg_acc_per_epoch_record) / len(avg_acc_per_epoch_record))
     def getAccuracy(self, losses):
         # 计算正确率
         cor = torch.eq(torch.zeros_like(losses), losses)
-        return torch.mean(cor.float(), dim=0)
-        
-    def getNegSample(self, ans_data) -> list:
-        # 随机生成非问题回答的样本
-        neg_sample = []
-        for i in range(len(ans_data)):
-            ridx = randint(0, len(ans_data) - 1)
-            while ridx == i:
-                ridx = randint(0, len(ans_data))
-            neg_sample.append(ans_data[ridx])
-        return neg_sample
-    def cal_cos(self, v1 : torch.Tensor, v2 : torch.Tensor) -> torch.Tensor:
-        # 余弦相似度，越大越不相似，完全一致时为0
-        return 1 - torch.nn.functional.cosine_similarity(v1.squeeze(), v2.squeeze(), dim=0)
+        return torch.mean(cor.float(), dim=0).item()
 
         
     

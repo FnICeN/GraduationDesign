@@ -15,9 +15,16 @@ class GetSentenceVec:
         self.data = data
         self.model = word2vec.Word2Vec.load(model_path)
     
-    def pad_sentence(self, tokenized_sentence, seq_length):
+    def pad_sentence(self, tokenized_sentence, seq_length, default_dim = 200):
+        '''
+        将句子填充到指定长度
+        tokenized_sentence: 分词后的句子
+        seq_length: 填充长度
+        default_dim: 默认填充向量维度，默认为200
+        '''
+        # 考虑到有些句子中没有有效词，但若不将本句话加入结果中，会导致答案与问题不对应，所以考虑用全0填充
         if len(tokenized_sentence) == 0:
-            return []
+            return [[0] * default_dim] * seq_length
         sentence = []
         if len(tokenized_sentence) >= seq_length:
             sentence = tokenized_sentence[:seq_length]
