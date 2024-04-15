@@ -3,7 +3,7 @@ from utils.get_sentence_vec import GetSentenceVec
 from random import randint
 from torch.utils.data import Dataset
 class MyDataset(Dataset):
-    def __init__(self, path):
+    def __init__(self, path, root_path):
         self.df = pd.read_csv(path)
         self.all_questions = []
         self.all_answers = []
@@ -12,8 +12,8 @@ class MyDataset(Dataset):
         for doc in self.df.iloc[:,1]:
             self.all_answers.append(doc.strip())
         # 向量化
-        q_v = GetSentenceVec(self.all_questions, 'D:\\GraduationDesign\\answerM\\models\\qa_vec.model').get_sentences_vec(20)
-        a_v = GetSentenceVec(self.all_answers, 'D:\\GraduationDesign\\answerM\\models\\qa_vec.model').get_sentences_vec(20)
+        q_v = GetSentenceVec(self.all_questions, root_path).get_sentences_vec(20)
+        a_v = GetSentenceVec(self.all_answers, root_path).get_sentences_vec(20)
         self.all_questions = q_v
         self.all_answers = a_v
         # 生成负样本

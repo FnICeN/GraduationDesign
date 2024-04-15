@@ -6,11 +6,14 @@ import trainRela.MyLoss as ml
 
 M = 0.1
 class LSTMModel(nn.Module):
-    def __init__(self, input_size = 200, hidden_size = 200, output_size = 200):
+    def __init__(self, device, root_path, input_size = 200, hidden_size = 200, output_size = 200):
         super(LSTMModel, self).__init__()
         self.hidden_size = hidden_size
         self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.hidden2out = nn.Linear(hidden_size, output_size)
+        self.device = device
+        self.root_path = root_path
+        
     def forward(self, input):
         _, (hidden, _) = self.lstm(input)
         output = self.hidden2out(hidden[-1])
@@ -19,7 +22,7 @@ class LSTMModel(nn.Module):
         # criterion = nn.CosineEmbeddingLoss(margin = M)
         criterion = ml.Margin_Cosine_ReductionLoss(M)
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
-        dataset = MyDataset(data_path)
+        dataset = MyDataset(data_path, self.root_path)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
         # 将data按照batch_size划分并训练epochs次
         for i in range(epochs):
@@ -30,6 +33,10 @@ class LSTMModel(nn.Module):
                 q_input = q_input.float()
                 ans_input = ans_input.float()
                 neg_input = neg_input.float()
+                #是否使用GPU
+                q_input = q_input.to(self.device)
+                ans_input = ans_input.to(self.device)
+                neg_input = neg_input.to(self.device)
                 # 执行预测
                 q_output, (_, _) = self.lstm(q_input)
                 ans_output, (_, _) = self.lstm(ans_input)

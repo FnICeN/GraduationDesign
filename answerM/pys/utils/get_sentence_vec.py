@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from gensim.models import word2vec
 
-path = "D:"
 
 class GetSentenceVec:
     '''
@@ -11,9 +10,10 @@ class GetSentenceVec:
     data: 待处理的数据（列表形式）
     model_path: word2vec模型路径
     '''
-    def __init__(self, data : list, model_path):
+    def __init__(self, data : list, root_path):
         self.data = data
-        self.model = word2vec.Word2Vec.load(model_path)
+        self.rootpath = root_path
+        self.model = word2vec.Word2Vec.load(root_path + "/GraduationDesign/answerM/models/qa_vec.model")
     
     def pad_sentence(self, tokenized_sentence, seq_length, default_dim = 200):
         '''
@@ -34,7 +34,7 @@ class GetSentenceVec:
 
     def cut_to_words(self):
         # 获取停用词
-        stop_words = pd.read_csv(path + "\\GraduationDesign\\语料库\\stopwords.dat", delimiter="\t", header=None, quoting=3, encoding='utf-8')
+        stop_words = pd.read_csv(self.rootpath + "/GraduationDesign/语料库/stopwords.dat", delimiter="\t", header=None, quoting=3, encoding='utf-8')
         stop_words = stop_words[0].tolist()
         # 若是多个句子，则返回嵌套列表
         if len(self.data) > 1:

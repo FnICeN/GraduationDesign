@@ -4,7 +4,7 @@ class Processor:
         self.rootpath = root_path
 
     def generateMd(self, N):
-        df = pd.read_csv(self.rootpath + "\\GraduationDesign\\语料库\\客服语料\\" + str(N) + ".md", sep='|')
+        df = pd.read_csv(self.rootpath + "/GraduationDesign/语料库/客服语料/" + str(N) + ".md", sep='|')
         #删除第一列
         df.drop(df.columns[0], axis=1, inplace=True)
         df.drop(df.columns[2], axis=1, inplace=True)
@@ -21,19 +21,19 @@ class Processor:
         df = df.apply(lambda x: x.str.strip())
         # 去除df列名中的空格
         df.columns = df.columns.map(lambda x: x.strip())
-        df.to_csv(self.rootpath + "\\GraduationDesign\\语料库\\客服语料\\整理后\\" + str(N) + ".csv", index=False)
+        df.to_csv(self.rootpath + "/GraduationDesign/语料库/客服语料/整理后/" + str(N) + ".csv", index=False)
         print("处理完成，生成文件：" + str(N) + ".csv")
 
     def concatCsv(self, ra : list):
-        df = pd.read_csv(self.rootpath + "\\GraduationDesign\\语料库\\客服语料\\整理后\\" + str(ra[0]) + ".csv")
+        df = pd.read_csv(self.rootpath + "/GraduationDesign/语料库/客服语料/整理后/" + str(ra[0]) + ".csv")
         for i in ra[1:]:
-            t = pd.read_csv(self.rootpath + "\\GraduationDesign\\语料库\\客服语料\\整理后\\" + str(i) + ".csv")
+            t = pd.read_csv(self.rootpath + "/GraduationDesign/语料库/客服语料/整理后/" + str(i) + ".csv")
             # 纵向拼接df和t
             df = pd.concat([df, t], ignore_index=True)
-        df.to_csv(self.rootpath + "\\GraduationDesign\\语料库\\客服语料\\整理后\\[{}-{}].csv".format(ra[0], ra[-1]), index=False)
+        df.to_csv(self.rootpath + "/GraduationDesign/语料库/客服语料/整理后/[{}-{}].csv".format(ra[0], ra[-1]), index=False)
         print("处理完成，生成文件：[{}-{}].csv，此文件共{}行".format(ra[0], ra[-1], len(df)))
 
-# processor = Processor("D:\\")
+# processor = Processor("D:")
 # for i in range(1, 7):
 #     processor.generateMd(i)
 # processor.concatCsv([1, 2, 3, 4, 5, 6])
