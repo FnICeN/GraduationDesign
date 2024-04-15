@@ -12,17 +12,17 @@ class LSTMModel(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.hidden2out = nn.Linear(hidden_size, output_size)
         self.device = device
-        self.root_path = root_path
+        self.rootpath = root_path
         
     def forward(self, input):
         _, (hidden, _) = self.lstm(input)
         output = self.hidden2out(hidden[-1])
         return output
-    def train(self, data_path, batch_size, epochs):
+    def trainStart(self, data_path, batch_size, epochs):
         # criterion = nn.CosineEmbeddingLoss(margin = M)
         criterion = ml.Margin_Cosine_ReductionLoss(M)
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
-        dataset = MyDataset(data_path, self.root_path)
+        dataset = MyDataset(data_path, self.rootpath)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
         # 将data按照batch_size划分并训练epochs次
         for i in range(epochs):
@@ -64,10 +64,58 @@ class LSTMModel(nn.Module):
                 # 输出accuracy
                 # print(f'Accuracy: { self.getAccuracy(correct, batch_size) }')
                 print("以上10轮平均正确率:", sum(avg_acc_per_epoch_record) / len(avg_acc_per_epoch_record))
+        
+        print("训练结束，模型保存到{}/GraduationDesign/answerM/models/下".format(self.rootpath))
+        self.save_model("LSTMModel")
+
     def getAccuracy(self, losses):
         # 计算正确率
         cor = torch.eq(torch.zeros_like(losses), losses)
         return torch.mean(cor.float(), dim=0).item()
+    
+    def save_model(self, model_name : str):
+        # 保存整个模型
+        torch.save(self, self.rootpath + "/GraduationDesign/answerM/models/" + model_name + ".pth")
+        # 保存模型参数
+        torch.save(self.state_dict(), self.rootpath + "/GraduationDesign/answerM/models/" + model_name + "_weights.pth")
+    
+
+def evaluateModel(root_path, model, device, testdata_path, batch_size):
+    criterion = ml.Margin_Cosine_ReductionLoss(M)
+    # 加载测试数据
+    dataset = MyDataset(testdata_path, root_path)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    # 计算正确率
+    acc_per_batch_record = []
+    for q_input, ans_input, neg_input in dataloader:
+        q_input = q_input.float()
+        ans_input = ans_input.float()
+        neg_input = neg_input.float()
+        #是否使用GPU
+        q_input = q_input.to(device)
+        ans_input = ans_input.to(device)
+        neg_input = neg_input.to(device)
+        # 执行预测
+        q_output, (_, _) = model.lstm(q_input)
+        ans_output, (_, _) = model.lstm(ans_input)
+        neg_output, (_, _) = model.lstm(neg_input)
+        # 在全连接层处理隐藏层输出
+        q_output = model.hidden2out(q_output)
+        ans_output = model.hidden2out(ans_output)
+        neg_output = model.hidden2out(neg_output)
+        # 将q_output由三维转为二维，(batch_size, hidden_size)或者可认为(batch_size, output_size)
+        # 每个句子里的20个向量相加，求均值，得句向量
+        q_output = torch.mean(q_output, dim=1)
+        ans_output = torch.mean(ans_output, dim=1)
+        neg_output = torch.mean(neg_output, dim=1)
+        losses, loss = criterion(q_output, ans_output, neg_output)
+        # 计算正确率
+        acc = model.getAccuracy(losses)
+        acc_per_batch_record.append(acc)
+        print("第{}批次正确率:{}".format(len(acc_per_batch_record), acc))
+    print("测试完成，平均测试正确率:", sum(acc_per_batch_record) / len(acc_per_batch_record))
+
+
 
         
     

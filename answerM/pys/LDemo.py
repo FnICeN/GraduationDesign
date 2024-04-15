@@ -1,29 +1,34 @@
 import torch
-from lstmModel import LSTMModel
+from lstmModel import LSTMModel, evaluateModel
 
 class NetTrainExecutor:
-    def __init__(self, root_path, data_path, batch_size, epoch):
+    def __init__(self, root_path, use_cuda : bool):
         self.rootpath = root_path
-        self.data_path = data_path
-        self.batch_size = batch_size
-        self.epoch = epoch
-        
-    def LSTMTrain(self, use_cuda : bool):
-        device = None
         if use_cuda == True:
             if torch.cuda.is_available() == True:
                 print("显卡模式")
-                device = torch.device('cuda')
+                self.device = torch.device('cuda')
             else:
                 print("选择显卡模式，但无显卡，切换到cpu模式")
-                device = torch.device('cpu')
+                self.device = torch.device('cpu')
         else:
             print("cpu模式")
-            device = torch.device('cpu')
-        lstm = LSTMModel(device=device, root_path = self.rootpath).to(device)
+            self.device = torch.device('cpu')
+        
+    def LSTMTrain(self, data_path, batch_size, epoch):
+        lstm = LSTMModel(device = self.device, root_path = self.rootpath).to(self.device)
         # lstm.train("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
-        lstm.train(self.data_path, self.batch_size, self.epoch)
+        lstm.train()
+        lstm.trainStart(data_path, batch_size, epoch)
+    
+    def LSTMEval(self, rootpath : str, testdata_path : str, weight_path : str, batch_size : int):
+        # 加载模型
+        lstm = LSTMModel(self.device, rootpath)
+        lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
+        lstm.eval()
+        evaluateModel(rootpath, lstm, self.device, testdata_path, batch_size)
 
-executor = NetTrainExecutor("D:", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
-# executor = NetTrainExecutor("/root/autodl-tmp", "/root/autodl-tmp/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
-executor.LSTMTrain(False)
+executor = NetTrainExecutor("D:", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100, False)
+# executor = NetTrainExecutor("/root/autodl-tmp", True)
+# executor.LSTMTrain("/root/autodl-tmp/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
+executor.LSTMEval("D:", "D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
