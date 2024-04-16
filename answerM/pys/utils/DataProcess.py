@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 class TrainDataset(Dataset):
     def __init__(self, path, root_path):
         self.df = pd.read_csv(path)
+        self.dflen = len(self.df)
         self.all_questions = []
         self.all_answers = []
         for doc in self.df.iloc[:,0]:

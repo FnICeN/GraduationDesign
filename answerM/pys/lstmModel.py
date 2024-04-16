@@ -19,12 +19,13 @@ class LSTMModel(nn.Module):
         _, (hidden, _) = self.lstm(input)
         output = self.hidden2out(hidden[-1])
         return output
-    def trainStart(self, data_path, batch_size, epochs):
+    def trainStart(self, data_path, batch_size, epochs, shuffle_neg):
         # criterion = nn.CosineEmbeddingLoss(margin = M)
         criterion = ml.Margin_Cosine_ReductionLoss(M)
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
         dataset = TrainDataset(data_path, self.rootpath)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+        print("负样本打乱" if shuffle_neg else "负样本不打乱")
         # 将data按照batch_size划分并训练epochs次
         for i in range(epochs):
             optimizer.zero_grad()
@@ -34,6 +35,9 @@ class LSTMModel(nn.Module):
                 q_input = q_input.float()
                 ans_input = ans_input.float()
                 neg_input = neg_input.float()
+                # 再次打乱neg_input
+                if shuffle_neg:
+                    neg_input = neg_input[torch.randperm(neg_input.size(0))]
                 # 数据到device
                 q_input = q_input.to(self.device)
                 ans_input = ans_input.to(self.device)
@@ -65,9 +69,10 @@ class LSTMModel(nn.Module):
                 # 输出accuracy
                 # print(f'Accuracy: { self.getAccuracy(correct, batch_size) }')
                 print("以上10轮平均正确率:", sum(avg_acc_per_epoch_record) / len(avg_acc_per_epoch_record))
-        
-        print("训练结束，模型保存到{}/GraduationDesign/answerM/models/下".format(self.rootpath))
+
         self.save_model("LSTMModel")
+        print("训练结束，模型保存到{}/GraduationDesign/answerM/models/下".format(self.rootpath))
+        
 
     def getAccuracy(self, losses):
         # 计算正确率
@@ -125,25 +130,32 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
     # 处理答案
     ans_vec = torch.tensor(ans_dataset.a_v).float().to(device)
     # 执行预测
-    print("问题向量:", question_vec.shape)
-    print("答案向量:", ans_vec.shape)
     q_output, (_, _) = model.lstm(question_vec)
     ans_output, (_, _) = model.lstm(ans_vec)
+    # 在全连接层处理隐藏层输出
     q_output = model.hidden2out(q_output)
     ans_output = model.hidden2out(ans_output)
-    print("问题输出:", q_output.shape)
-    print("答案输出:", ans_output.shape)
+    # 降维
     q_output = torch.mean(q_output.squeeze(), dim = 0)
     ans_output = torch.mean(ans_output, dim = 1)
-    print("处理后问题输出:", q_output.shape)
-    print("处理后答案输出:", ans_output.shape)
     # 计算余弦相似度
     cos = nn.CosineSimilarity(dim = 1)
-    cos_sim_list = cos(q_output, ans_output)
-    # 取相似度最高的答案
-    max_index = torch.argmax(cos_sim_list)
+    sim_list = cos(q_output, ans_output)
+    count_list = []
+    for i in range(len(sim_list)):
+        # 假设第i个是正确答案
+        sub_list = torch.sub(torch.fill(sim_list, sim_list[i]), sim_list)
+        # 统计与负向答案相似度之差大于0.5的个数
+        count = torch.sum(torch.gt(sub_list, 0.5))
+        count_list.append(count)
+    max_idx = torch.argmax(torch.tensor(count_list)).item()
     print("问题:", question)
-    print("答案:", ans_dataset.all_answers[max_index])
+    print("答案:", ans_dataset.all_answers[max_idx])
+    # # 取相似度最高的答案
+    # max_index = torch.argmax(sim_list)
+    # print("问题:", question)
+    # print("答案:", ans_dataset.all_answers[max_index])
+
 
 
 

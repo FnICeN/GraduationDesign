@@ -15,11 +15,11 @@ class NetExecutor:
             print("cpu模式")
             self.device = torch.device('cpu')
         
-    def LSTMTrain(self, data_path, batch_size, epoch):
+    def LSTMTrain(self, data_path, batch_size, epoch, shuffle_neg : bool):
         lstm = LSTMModel(device = self.device, root_path = self.rootpath).to(self.device)
         # lstm.train("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
         lstm.train()
-        lstm.trainStart(data_path, batch_size, epoch)
+        lstm.trainStart(data_path, batch_size, epoch, shuffle_neg)
     
     def LSTMEval(self, testdata_path : str, weight_path : str, batch_size : int):
         # 加载模型
@@ -37,5 +37,6 @@ class NetExecutor:
 executor = NetExecutor("D:", False)
 # executor = NetTrainExecutor("/root/autodl-tmp", True)
 # executor.LSTMTrain("/root/autodl-tmp/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
-executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
-executor.LSTMPredict("如何注册新账户？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth")
+# executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
+# executor.LSTMPredict("我不小心误删了重要的文件，您能帮助我恢复吗？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth")
+executor.LSTMTrain("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 150, False)
