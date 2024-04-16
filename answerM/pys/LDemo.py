@@ -1,7 +1,7 @@
 import torch
-from lstmModel import LSTMModel, evaluateModel
+from lstmModel import LSTMModel, evaluateModel, predict
 
-class NetTrainExecutor:
+class NetExecutor:
     def __init__(self, root_path, use_cuda : bool):
         self.rootpath = root_path
         if use_cuda == True:
@@ -21,14 +21,21 @@ class NetTrainExecutor:
         lstm.train()
         lstm.trainStart(data_path, batch_size, epoch)
     
-    def LSTMEval(self, rootpath : str, testdata_path : str, weight_path : str, batch_size : int):
+    def LSTMEval(self, testdata_path : str, weight_path : str, batch_size : int):
         # 加载模型
-        lstm = LSTMModel(self.device, rootpath)
+        lstm = LSTMModel(self.device, self.rootpath)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
         lstm.eval()
-        evaluateModel(rootpath, lstm, self.device, testdata_path, batch_size)
+        evaluateModel(self.rootpath, lstm, self.device, testdata_path, batch_size)
 
-executor = NetTrainExecutor("D:", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100, False)
+    def LSTMPredict(self, question, ans_path, weight_path):
+        lstm = LSTMModel(self.device, self.rootpath)
+        lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
+        lstm.eval()
+        predict(self.rootpath, question, ans_path, lstm, self.device)
+
+executor = NetExecutor("D:", False)
 # executor = NetTrainExecutor("/root/autodl-tmp", True)
 # executor.LSTMTrain("/root/autodl-tmp/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
-executor.LSTMEval("D:", "D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
+executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
+executor.LSTMPredict("如何注册新账户？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth")

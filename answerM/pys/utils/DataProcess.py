@@ -2,7 +2,7 @@ import pandas as pd
 from utils.get_sentence_vec import GetSentenceVec
 from random import randint
 from torch.utils.data import Dataset
-class MyDataset(Dataset):
+class TrainDataset(Dataset):
     def __init__(self, path, root_path):
         self.df = pd.read_csv(path)
         self.all_questions = []
@@ -31,6 +31,20 @@ class MyDataset(Dataset):
                 ridx = randint(0, len(a_v))
             neg_answers.append(a_v[ridx])
         return neg_answers
+    
+class PredictDataset(Dataset):
+    def __init__(self, path, root_path):
+        self.df = pd.read_csv(path)
+        self.all_answers = []
+        for doc in self.df.iloc[:,1]:
+            self.all_answers.append(doc.strip())
+        # 向量化，得到句向量列表，维度为(句子数量, 20, 200)
+        self.a_v = GetSentenceVec(self.all_answers, root_path).get_sentences_vec(20)
+    def __len__(self):
+        return len(self.df)
+    def __getitem__(self, idx):
+        # 返回的是原句
+        return self.all_answers[idx]
     
 # dataset = MyDataset("D:\\GraduationDesign\\语料库\\客服语料\\整理后\\1.csv")
 # dataloader = DataLoader(dataset, batch_size=10, shuffle=True, drop_last=True)

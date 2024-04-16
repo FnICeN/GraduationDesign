@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from utils.DataProcess import MyDataset
+from utils.DataProcess import TrainDataset, PredictDataset
+from utils.get_sentence_vec import GetSentenceVec
 import trainRela.MyLoss as ml
 
 M = 0.1
@@ -22,7 +23,7 @@ class LSTMModel(nn.Module):
         # criterion = nn.CosineEmbeddingLoss(margin = M)
         criterion = ml.Margin_Cosine_ReductionLoss(M)
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
-        dataset = MyDataset(data_path, self.rootpath)
+        dataset = TrainDataset(data_path, self.rootpath)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
         # 将data按照batch_size划分并训练epochs次
         for i in range(epochs):
@@ -33,7 +34,7 @@ class LSTMModel(nn.Module):
                 q_input = q_input.float()
                 ans_input = ans_input.float()
                 neg_input = neg_input.float()
-                #是否使用GPU
+                # 数据到device
                 q_input = q_input.to(self.device)
                 ans_input = ans_input.to(self.device)
                 neg_input = neg_input.to(self.device)
@@ -80,10 +81,10 @@ class LSTMModel(nn.Module):
         torch.save(self.state_dict(), self.rootpath + "/GraduationDesign/answerM/models/" + model_name + "_weights.pth")
     
 
-def evaluateModel(root_path, model, device, testdata_path, batch_size):
+def evaluateModel(root_path : str, model : LSTMModel, device : torch.device, testdata_path : str, batch_size : int):
     criterion = ml.Margin_Cosine_ReductionLoss(M)
     # 加载测试数据
-    dataset = MyDataset(testdata_path, root_path)
+    dataset = TrainDataset(testdata_path, root_path)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     # 计算正确率
     acc_per_batch_record = []
@@ -114,6 +115,39 @@ def evaluateModel(root_path, model, device, testdata_path, batch_size):
         acc_per_batch_record.append(acc)
         print("第{}批次正确率:{}".format(len(acc_per_batch_record), acc))
     print("测试完成，平均测试正确率:", sum(acc_per_batch_record) / len(acc_per_batch_record))
+
+def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, device : torch.device):
+    # 加载答案数据
+    ans_dataset = PredictDataset(ans_path, rootpath)
+    # 处理问题
+    question_vec = GetSentenceVec([question], rootpath).get_sentence_vec(20)
+    question_vec = torch.tensor(question_vec).float().to(device)
+    # 处理答案
+    ans_vec = torch.tensor(ans_dataset.a_v).float().to(device)
+    # 执行预测
+    print("问题向量:", question_vec.shape)
+    print("答案向量:", ans_vec.shape)
+    q_output, (_, _) = model.lstm(question_vec)
+    ans_output, (_, _) = model.lstm(ans_vec)
+    q_output = model.hidden2out(q_output)
+    ans_output = model.hidden2out(ans_output)
+    print("问题输出:", q_output.shape)
+    print("答案输出:", ans_output.shape)
+    q_output = torch.mean(q_output.squeeze(), dim = 0)
+    ans_output = torch.mean(ans_output, dim = 1)
+    print("处理后问题输出:", q_output.shape)
+    print("处理后答案输出:", ans_output.shape)
+    # 计算余弦相似度
+    cos = nn.CosineSimilarity(dim = 1)
+    cos_sim_list = cos(q_output, ans_output)
+    # 取相似度最高的答案
+    max_index = torch.argmax(cos_sim_list)
+    print("问题:", question)
+    print("答案:", ans_dataset.all_answers[max_index])
+
+
+
+
 
 
 
