@@ -16,10 +16,11 @@ class LSTMModel(nn.Module):
         self.rootpath = root_path
         
     def forward(self, input):
-        _, (hidden, _) = self.lstm(input)
+        output, (hidden, _) = self.lstm(input)
         output = self.hidden2out(hidden[-1])
         return output
     def trainStart(self, data_path, batch_size, epochs, shuffle_neg):
+        # 训练时取每个时间步的输出计算loss反向传播
         # criterion = nn.CosineEmbeddingLoss(margin = M)
         criterion = ml.Margin_Cosine_ReductionLoss(M)
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
@@ -102,18 +103,18 @@ def evaluateModel(root_path : str, model : LSTMModel, device : torch.device, tes
         ans_input = ans_input.to(device)
         neg_input = neg_input.to(device)
         # 执行预测
-        q_output, (_, _) = model.lstm(q_input)
-        ans_output, (_, _) = model.lstm(ans_input)
-        neg_output, (_, _) = model.lstm(neg_input)
+        q_output = model(q_input)
+        ans_output = model(ans_input)
+        neg_output = model(neg_input)
         # 在全连接层处理隐藏层输出
-        q_output = model.hidden2out(q_output)
-        ans_output = model.hidden2out(ans_output)
-        neg_output = model.hidden2out(neg_output)
+        # q_output = model.hidden2out(q_output)
+        # ans_output = model.hidden2out(ans_output)
+        # neg_output = model.hidden2out(neg_output)
         # 将q_output由三维转为二维，(batch_size, hidden_size)或者可认为(batch_size, output_size)
         # 每个句子里的20个向量相加，求均值，得句向量
-        q_output = torch.mean(q_output, dim=1)
-        ans_output = torch.mean(ans_output, dim=1)
-        neg_output = torch.mean(neg_output, dim=1)
+        # q_output = torch.mean(q_output, dim=1)
+        # ans_output = torch.mean(ans_output, dim=1)
+        # neg_output = torch.mean(neg_output, dim=1)
         losses, loss = criterion(q_output, ans_output, neg_output)
         # 计算正确率
         acc = model.getAccuracy(losses)
@@ -122,6 +123,7 @@ def evaluateModel(root_path : str, model : LSTMModel, device : torch.device, tes
     print("测试完成，平均测试正确率:", sum(acc_per_batch_record) / len(acc_per_batch_record))
 
 def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, device : torch.device):
+    # 预测时取最后一个时间步的输出作为结果
     # 加载答案数据
     ans_dataset = PredictDataset(ans_path, rootpath)
     # 处理问题
@@ -130,14 +132,14 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
     # 处理答案
     ans_vec = torch.tensor(ans_dataset.a_v).float().to(device)
     # 执行预测
-    q_output, (_, _) = model.lstm(question_vec)
-    ans_output, (_, _) = model.lstm(ans_vec)
+    q_output = model(question_vec)
+    ans_output = model(ans_vec)
     # 在全连接层处理隐藏层输出
-    q_output = model.hidden2out(q_output)
-    ans_output = model.hidden2out(ans_output)
+    # q_output = model.hidden2out(q_output)
+    # ans_output = model.hidden2out(ans_output)
     # 降维
-    q_output = torch.mean(q_output.squeeze(), dim = 0)
-    ans_output = torch.mean(ans_output, dim = 1)
+    # q_output = torch.mean(q_output.squeeze(), dim = 0)
+    # ans_output = torch.mean(ans_output, dim = 1)
     # 计算余弦相似度
     cos = nn.CosineSimilarity(dim = 1)
     sim_list = cos(q_output, ans_output)
@@ -148,9 +150,14 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
         # 统计与负向答案相似度之差大于0.5的个数
         count = torch.sum(torch.gt(sub_list, 0.5))
         count_list.append(count)
-    max_idx = torch.argmax(torch.tensor(count_list)).item()
+    max_idx_list = torch.argsort(torch.tensor(count_list))
+    max_idx = max_idx_list[-1]
+    sencond_idx = max_idx_list[-2]
+    third_idx = max_idx_list[-3]
     print("问题:", question)
-    print("答案:", ans_dataset.all_answers[max_idx])
+    print("答案一:", ans_dataset.all_answers[max_idx])
+    print("答案二:", ans_dataset.all_answers[sencond_idx])
+    print("答案三:", ans_dataset.all_answers[third_idx])
     # # 取相似度最高的答案
     # max_index = torch.argmax(sim_list)
     # print("问题:", question)

@@ -25,18 +25,18 @@ class NetExecutor:
         # 加载模型
         lstm = LSTMModel(self.device, self.rootpath)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
-        lstm.eval()
+        print("加载模型成功")
+        lstm.lstm.eval()
         evaluateModel(self.rootpath, lstm, self.device, testdata_path, batch_size)
 
     def LSTMPredict(self, question, ans_path, weight_path):
         lstm = LSTMModel(self.device, self.rootpath)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
-        lstm.eval()
+        print("加载模型成功")
+        lstm.lstm.eval()
         predict(self.rootpath, question, ans_path, lstm, self.device)
 
 executor = NetExecutor("D:", False)
-# executor = NetTrainExecutor("/root/autodl-tmp", True)
-# executor.LSTMTrain("/root/autodl-tmp/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
 # executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
-# executor.LSTMPredict("我不小心误删了重要的文件，您能帮助我恢复吗？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth")
-executor.LSTMTrain("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 150, False)
+executor.LSTMPredict("你们的支付方式有哪些？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth")
+# executor.LSTMTrain("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 64, 1, False)
