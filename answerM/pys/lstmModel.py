@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from utils.DataProcess import TrainDataset, PredictDataset
 from utils.get_sentence_vec import GetSentenceVec
+from LLMRela.ChatGPTDemo import GPTChat
 import trainRela.MyLoss as ml
 
 M = 0.1
@@ -16,7 +17,7 @@ class LSTMModel(nn.Module):
         self.rootpath = root_path
         
     def forward(self, input):
-        output, (hidden, _) = self.lstm(input)
+        _, (hidden, _) = self.lstm(input)
         output = self.hidden2out(hidden[-1])
         return output
     def trainStart(self, data_path, batch_size, epochs, shuffle_neg):
@@ -26,6 +27,7 @@ class LSTMModel(nn.Module):
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
         dataset = TrainDataset(data_path, self.rootpath)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+        print("本次训练参数：batchsize={}，epoch={}".format(batch_size, epochs))
         print("负样本打乱" if shuffle_neg else "负样本不打乱")
         # 将data按照batch_size划分并训练epochs次
         for i in range(epochs):
@@ -92,6 +94,7 @@ def evaluateModel(root_path : str, model : LSTMModel, device : torch.device, tes
     # 加载测试数据
     dataset = TrainDataset(testdata_path, root_path)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    print("本次测试batchsize={}".format(batch_size))
     # 计算正确率
     acc_per_batch_record = []
     for q_input, ans_input, neg_input in dataloader:
@@ -122,7 +125,7 @@ def evaluateModel(root_path : str, model : LSTMModel, device : torch.device, tes
         print("第{}批次正确率:{}".format(len(acc_per_batch_record), acc))
     print("测试完成，平均测试正确率:", sum(acc_per_batch_record) / len(acc_per_batch_record))
 
-def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, device : torch.device):
+def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, device : torch.device, GPTassis : bool):
     # 预测时取最后一个时间步的输出作为结果
     # 加载答案数据
     ans_dataset = PredictDataset(ans_path, rootpath)
@@ -134,6 +137,8 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
     # 执行预测
     q_output = model(question_vec)
     ans_output = model(ans_vec)
+    print("q_output:", q_output.shape)
+    print("ans_output:", ans_output.shape)
     # 在全连接层处理隐藏层输出
     # q_output = model.hidden2out(q_output)
     # ans_output = model.hidden2out(ans_output)
@@ -154,14 +159,46 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
     max_idx = max_idx_list[-1]
     sencond_idx = max_idx_list[-2]
     third_idx = max_idx_list[-3]
+    dedi_ans = [ans_dataset.all_answers[max_idx], ans_dataset.all_answers[sencond_idx], ans_dataset.all_answers[third_idx]]
     print("问题:", question)
-    print("答案一:", ans_dataset.all_answers[max_idx])
-    print("答案二:", ans_dataset.all_answers[sencond_idx])
-    print("答案三:", ans_dataset.all_answers[third_idx])
+    print("答案一:", dedi_ans[0])
+    print("答案二:", dedi_ans[1])
+    print("答案三:", dedi_ans[2])
     # # 取相似度最高的答案
     # max_index = torch.argmax(sim_list)
     # print("问题:", question)
     # print("答案:", ans_dataset.all_answers[max_index])
+    # 若启用GPT辅助
+    if GPTassis:
+        for i in range(5):
+            try:
+                gpt = GPTChat("你是一个电商平台的智能客服答疑助手，你会收到JSON格式的消息，你的输出格式为：{\"gen_ans\" : \"对问题自拟一个回答\"}")
+                gptRes = gpt.getGPTResponse(
+                    {
+                        "question": question,
+                    }
+                )
+                break
+            except:
+                if i != 4:
+                    print("GPT请求失败，重试（第{}次）...".format(i + 1))
+                else:
+                    print("GPT请求失败，重试5次仍失败，退出")
+                    return
+        gptRes = gptRes["gen_ans"]
+        print("GPT辅助回答:", gptRes)
+        gptResVec = GetSentenceVec([gptRes], rootpath).get_sentence_vec(20)
+        gptResVec = torch.mean(torch.tensor(gptResVec).float(), dim = 0)
+        ans_vecs = torch.stack([ans_output[max_idx], ans_output[sencond_idx], ans_output[third_idx]])
+        sim_list = torch.abs(cos(gptResVec, ans_vecs))
+        print(sim_list)
+        max_idx = torch.argmax(sim_list)
+        if sim_list[max_idx] > 0.06:
+            print("GPT辅助后回答:", dedi_ans[max_idx])
+        else:
+            print("最终回答:", gptRes)
+
+
 
 
 

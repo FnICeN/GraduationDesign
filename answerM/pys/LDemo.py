@@ -23,20 +23,20 @@ class NetExecutor:
     
     def LSTMEval(self, testdata_path : str, weight_path : str, batch_size : int):
         # 加载模型
-        lstm = LSTMModel(self.device, self.rootpath)
+        lstm = LSTMModel(self.device, self.rootpath).to(self.device)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
         print("加载模型成功")
         lstm.lstm.eval()
         evaluateModel(self.rootpath, lstm, self.device, testdata_path, batch_size)
 
-    def LSTMPredict(self, question, ans_path, weight_path):
-        lstm = LSTMModel(self.device, self.rootpath)
+    def LSTMPredict(self, question, ans_path, weight_path, GPTassis : bool):
+        lstm = LSTMModel(self.device, self.rootpath).to(self.device)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
         print("加载模型成功")
         lstm.lstm.eval()
-        predict(self.rootpath, question, ans_path, lstm, self.device)
+        predict(self.rootpath, question, ans_path, lstm, self.device, GPTassis)
 
 executor = NetExecutor("D:", False)
 # executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
-executor.LSTMPredict("你们的支付方式有哪些？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth")
+executor.LSTMPredict("你们领导的电话号码是多少？怎么联系？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth", True)
 # executor.LSTMTrain("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 64, 1, False)
