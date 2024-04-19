@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from utils.DataProcess import TrainDataset, PredictDataset
 from utils.get_sentence_vec import GetSentenceVec
 from LLMRela.ChatGPTDemo import GPTChat
+from VSM_tfidf_Algorithm import VSM_tfidf
 import trainRela.MyLoss as ml
 
 M = 0.1
@@ -187,16 +188,30 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
                     return
         gptRes = gptRes["gen_ans"]
         print("GPT辅助回答:", gptRes)
-        gptResVec = GetSentenceVec([gptRes], rootpath).get_sentence_vec(20)
-        gptResVec = torch.mean(torch.tensor(gptResVec).float(), dim = 0)
-        ans_vecs = torch.stack([ans_output[max_idx], ans_output[sencond_idx], ans_output[third_idx]])
-        sim_list = torch.abs(cos(gptResVec, ans_vecs))
-        print(sim_list)
-        max_idx = torch.argmax(sim_list)
-        if sim_list[max_idx] > 0.06:
-            print("GPT辅助后回答:", dedi_ans[max_idx])
+        # 使用VSM-tfidf判断相似度
+        vsm = VSM_tfidf("D:", dedi_ans)
+        prob_index = vsm.getAnswerIndex(gptRes)
+        final_ans = ""
+        if prob_index[0][0] > 0.3:
+            final_ans = dedi_ans[prob_index[0][1]]
+            print("GPT助选，选择合理答案")
         else:
-            print("最终回答:", gptRes)
+            final_ans = gptRes
+            print("GPT认为不存在合理答案，使用自拟答案")
+        print("最终回答：", final_ans)
+
+
+        # 使用wod2vec判断相似度
+        # gptResVec = GetSentenceVec([gptRes], rootpath).get_sentence_vec(20)
+        # gptResVec = torch.mean(torch.tensor(gptResVec).float(), dim = 0)
+        # ans_vecs = torch.stack([ans_output[max_idx], ans_output[sencond_idx], ans_output[third_idx]])
+        # sim_list = torch.abs(cos(gptResVec, ans_vecs))
+        # print(sim_list)
+        # max_idx = torch.argmax(sim_list)
+        # if sim_list[max_idx] > 0.06:
+        #     print("GPT辅助后回答:", dedi_ans[max_idx])
+        # else:
+        #     print("最终回答:", gptRes)
 
 
 

@@ -38,5 +38,5 @@ class NetExecutor:
 
 executor = NetExecutor("D:", False)
 # executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
-executor.LSTMPredict("你们领导的电话号码是多少？怎么联系？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth", True)
+executor.LSTMPredict("我该如何修改我的账户密码？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth", True)
 # executor.LSTMTrain("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 64, 1, False)
