@@ -8,6 +8,7 @@ from VSM_tfidf_Algorithm import VSM_tfidf
 import trainRela.MyLoss as ml
 
 M = 0.1
+GPT_M = 0.4
 class LSTMModel(nn.Module):
     def __init__(self, device, root_path, input_size = 200, hidden_size = 200, output_size = 200):
         super(LSTMModel, self).__init__()
@@ -32,10 +33,10 @@ class LSTMModel(nn.Module):
         print("负样本打乱" if shuffle_neg else "负样本不打乱")
         # 将data按照batch_size划分并训练epochs次
         for i in range(epochs):
-            optimizer.zero_grad()
             acc_per_batch_record = []
             avg_acc_per_epoch_record = []
             for q_input, ans_input, neg_input in dataloader:
+                optimizer.zero_grad()
                 q_input = q_input.float()
                 ans_input = ans_input.float()
                 neg_input = neg_input.float()
@@ -189,10 +190,11 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
         gptRes = gptRes["gen_ans"]
         print("GPT辅助回答:", gptRes)
         # 使用VSM-tfidf判断相似度
-        vsm = VSM_tfidf("D:", dedi_ans)
+        vsm = VSM_tfidf(rootpath, dedi_ans)
         prob_index = vsm.getAnswerIndex(gptRes)
         final_ans = ""
-        if prob_index[0][0] > 0.3:
+        print(prob_index)
+        if prob_index[0][0] > GPT_M:
             final_ans = dedi_ans[prob_index[0][1]]
             print("GPT助选，选择合理答案")
         else:
