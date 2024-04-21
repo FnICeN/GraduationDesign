@@ -12,7 +12,7 @@ class VSM_word2vec:
         '''
         print("=================VSM_word2vec=================\n")
         # 读取停用词
-        self.stop_words = pd.read_csv("D:/GraduationDesign/语料库/stopwords.dat", delimiter="\t", header=None, quoting=3, encoding='utf-8')
+        self.stop_words = pd.read_csv(rootpath + "/GraduationDesign/语料库/stopwords.dat", delimiter="\t", header=None, quoting=3, encoding='utf-8')
         self.stop_words = self.stop_words[0].tolist()
         self.docs = []
         if type(option_data) == pd.DataFrame:
