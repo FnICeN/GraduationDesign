@@ -18,11 +18,16 @@ class VSM_word2vec:
         if type(option_data) == pd.DataFrame:
             print("接收到DataFrame类型")
             for doc in option_data.iloc[:,0]:
-                self.docs.append([word for word in jieba.cut(doc) if word not in self.stop_words and word !=' '])
+                # 增加一步判断，若分词后为空，则不加入
+                temp = [word for word in jieba.cut(doc) if word not in self.stop_words and word !=' ']
+                if len(temp) > 0:
+                    self.docs.append(temp)
         elif type(option_data) == list:
             print("接收到list类型")
             for doc in option_data:
-                self.docs.append([word for word in jieba.cut(doc) if word not in self.stop_words and word !=' '])
+                temp = [word for word in jieba.cut(doc) if word not in self.stop_words and word !=' ']
+                if len(temp) > 0:
+                    self.docs.append(temp)
         if rebuild:
             m = word2vec.Word2Vec(self.docs, sg=0, vector_size=200, window=3, min_count=1, workers=8)
             m.save(rootpath + '/GraduationDesign/answerM/models/word2vec.model')
@@ -37,6 +42,7 @@ class VSM_word2vec:
         self.option_dict = {}
         for i, doc in enumerate(self.docs):
             doc_vec = []
+            count = 0
             for word in doc:
                 if word in self.dic:
                     doc_vec.append(self.model.wv[word])
@@ -55,14 +61,15 @@ class VSM_word2vec:
             if word in self.dic:
                 sample_vec.append(self.model.wv[word])
         sample_vec = np.mean(sample_vec, axis=0)
-        prob_ans = self.model.wv.cosine_similarities(sample_vec, [self.option_dict[i] for i in range(len(self.docs))])
+        prob_ans = self.model.wv.cosine_similarities(sample_vec, [self.option_dict[i] for i in range(len(self.option_dict))])
         # 选出前三个最相似的
         prob_ans = np.argsort(prob_ans)[-3:]
         print("\n=================VSM_word2vec=================")
         return prob_ans.tolist()
     
 
-# df = pd.read_csv("D:/GraduationDesign/语料库/客服语料/整理后/1.csv")
+# df = pd.read_csv("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv")
+# print(df.shape)
 # v = VSM_word2vec("D:", df, True)
 # prob_ans = v.getProbAnsIndex("怎么注册新帐号啊？")
 # print(prob_ans)

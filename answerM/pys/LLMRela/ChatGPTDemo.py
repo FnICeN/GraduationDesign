@@ -57,47 +57,47 @@ class GPTChat:
 # })
 # print(res)
 
-gpt = GPTChat("""
-              你是一个电商平台客服，你会收到JSON格式的消息，消息格式为：
-              {
-              'question' : '用户的问题',
-              'orders' : 
-                [
-                    {
-                        'order_id' : '订单号',
-                        'product' : '产品名称',
-                        'price' : '价格',
-                        'status' : '状态',
-                    }, 
-                    ...
-                ]
-              }
-              你需要根据用户的问题，必要时可以参考用户的订单信息，回答用户的问题，回答尽量简洁一些。
-              你需要输出JSON格式的消息，为：
-              {'gen_ans' : '你的回答'}
-              """)
-orders = [{'order_id': '123456', 'product': '手机', 'price': '1999', 'status': '已发货'}, 
-          {'order_id': '123457', 'product': '电脑', 'price': '5999', 'status': '已签收'}]
-question = "订单号123456是什么货物？"
-res = None
-for _ in range(3):
-    try:
-        res = gpt.getGPTSeveralResponses({
-            'question': question,
-            'orders': orders
-        })
-        print(res)
-        break
-    except:
-        print("retrying...")
-for _ in range(3):
-    try:
-        res = gpt.getGPTSeveralResponses({
-            'question': "这个货物的价格是多少？",
-            'orders': orders
-        })
-        print(res)
-        break
-    except:
-        print("retrying...")
+# gpt = GPTChat("""
+#               你是一个电商平台客服，你会收到JSON格式的消息，消息格式为：
+#               {
+#               'question' : '用户的问题',
+#               'orders' : 
+#                 [
+#                     {
+#                         'order_id' : '订单号',
+#                         'product' : '产品名称',
+#                         'price' : '价格',
+#                         'status' : '状态',
+#                     }, 
+#                     ...
+#                 ]
+#               }
+#               你需要根据用户的问题，必要时可以参考用户的订单信息，回答用户的问题，回答尽量简洁一些。
+#               你需要输出JSON格式的消息，为：
+#               {'gen_ans' : '你的回答'}
+#               """)
+# orders = [{'order_id': '123456', 'product': '手机', 'price': '1999', 'status': '已发货'}, 
+#           {'order_id': '123457', 'product': '电脑', 'price': '5999', 'status': '已签收'}]
+# question = "订单号123456是什么货物？"
+# res = None
+# for _ in range(3):
+#     try:
+#         res = gpt.getGPTSeveralResponses({
+#             'question': question,
+#             'orders': orders
+#         })
+#         print(res)
+#         break
+#     except:
+#         print("retrying...")
+# for _ in range(3):
+#     try:
+#         res = gpt.getGPTSeveralResponses({
+#             'question': "这个货物的价格是多少？",
+#             'orders': orders
+#         })
+#         print(res)
+#         break
+#     except:
+#         print("retrying...")
 
