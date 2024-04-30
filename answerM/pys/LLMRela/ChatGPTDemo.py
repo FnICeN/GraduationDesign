@@ -19,12 +19,12 @@ class GPTChat:
             response_format = { "type": "json_object" },
             messages = [
                 {"role": "system", "content": self.prompt},
-                {"role": "user", "content": json.dumps(question)},
+                {"role": "user", "content": json.dumps(question, ensure_ascii=False)},
             ], 
         )
         return json.loads(resp.choices[0].message.content)
     def getGPTSeveralResponses(self, question : list) -> dict:
-        self.history.append({"role": "user", "content": json.dumps(question)})
+        self.history.append({"role": "user", "content": json.dumps(question, ensure_ascii=False)})
         resp = self.client.chat.completions.create(
             model = "gpt-3.5-turbo-0125",
             response_format = { "type": "json_object" },
