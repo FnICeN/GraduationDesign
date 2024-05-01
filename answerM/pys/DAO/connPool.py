@@ -1,0 +1,36 @@
+import pymysql
+from dbutils.pooled_db import PooledDB
+
+class SqlPool(object):
+    _initialed = False
+    def __init__(self):
+        # 保证数据库只连接一次
+        if SqlPool._initialed:
+            return
+        print("连接数据库...")
+        self.POLL = PooledDB(
+            creator=pymysql,
+            maxconnections=6,
+            maxcached=6,
+            maxshared=6,
+            blocking=True,
+            setsession=[],
+            host="127.0.0.1",
+            port=3306,
+            user="root",
+            password="647252",
+            database="graduationdesign",
+            charset="utf8"
+        )
+        SqlPool._initialed = True
+    def __new__(cls):
+        if not hasattr(cls, '_instance'):
+            cls._instance = object.__new__(cls)
+        return cls._instance
+    def getConn(self):
+        conn = self.POLL.connection()
+        cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)
+        return conn, cursor
+    def closeConn(self, conn, cursor):
+        cursor.close()
+        conn.close()
