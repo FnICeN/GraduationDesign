@@ -10,3 +10,9 @@ def login():
     usi = userServiceImpl()
     res = usi.Login(data["username"], data["password"])
     return res
+
+@loginApi.route("/getCurUserInfo", methods=['GET'])
+def getCurUserInfo():
+    usi = userServiceImpl()
+    res = usi.getCurUserInfo()
+    return res

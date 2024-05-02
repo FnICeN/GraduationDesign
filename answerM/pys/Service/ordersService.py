@@ -28,9 +28,15 @@ class ordersServiceImpl:
         rowcount = self.ordersDAO.addOrder(userid, new_orderid, productid, "已下单")
         # 返回成功与否
         return rowcount > 0
-    def deleteOrderByUseridAndOrderid(self, userid, orderid):
-        return self.ordersDAO.deleteOrderByUseridAndOrderid(userid, orderid)
+    def deleteCurUserOrder(self, orderid):
+        c = Config()
+        userid = c.userid
+        return self.ordersDAO.deleteOrderByUseridAndOrderid(userid, orderid) == 1
     def changeCurUserOrderStatus(self, orderid, status):
         c = Config()
         userid = c.userid
         return self.ordersDAO.updateOrderStatus(userid, orderid, status) == 1
+    def showCurUserAllOrders(self):
+        c = Config()
+        userid = c.userid
+        return self.ordersDAO.getUserOrdersDetail(userid)

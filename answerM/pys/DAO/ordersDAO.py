@@ -9,6 +9,14 @@ class ordersDAOImpl:
         result = cursor.fetchall()
         self.sqlPool.closeConn(conn, cursor)
         return result
+    def getUserAllOrdersCount(self, userid):
+        conn, cursor = self.sqlPool.getConn()
+        sql = "select count(*) from orders where userid = %s"
+        cursor.execute(sql, userid)
+        result = cursor.fetchall()
+        self.sqlPool.closeConn(conn, cursor)
+        # 返回数字
+        return result[0]["count(*)"]
     def getOrdersByUserid(self, userid):
         conn, cursor = self.sqlPool.getConn()
         sql = "select * from orders where userid = %s"

@@ -7,8 +7,6 @@ from api.ordersApi import ordersApi
 
 from config import Config
 
-
-
 # 创建应用实例
 app = Flask(__name__)
 
