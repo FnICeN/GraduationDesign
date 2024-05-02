@@ -15,7 +15,7 @@ class ChatModel():
         # 只调用一次init
         if ChatModel._initialed:
             return
-        print("初始化...")
+        print("ChatModel初始化...")
         self.model = None
         self.df = pd.read_csv("E:/毕业设计/GraduationDesign/语料库/客服语料/整理后/[1-6].csv")
         self.all_answer = self.df.iloc[:,1]
@@ -24,7 +24,7 @@ class ChatModel():
         # 单例模式
         if not hasattr(cls, '_instance'):
             cls._instance = object.__new__(cls)
-            print("初次建立")
+            print("ChatModel初次建立")
         return cls._instance
         
 chatApi = Blueprint("chatApi", __name__)

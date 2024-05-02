@@ -10,7 +10,19 @@
 
 相似度计算过程沿用四类已知的文本匹配算法，效果各有优劣
 
+# 所有需要配置的文件
+
+## 配置路径
+
+- [answerM\pys\DAO\qaDAO.py](answerM\pys\DAO\qaDAO.py)
+- [answerM\pys\api\chatApi.py](answerM\pys\api\chatApi.py)
+- [answerM\pys\test\ErroTest.ipynb](answerM\pys\test\ErroTest.ipynb)
+
+## 配置数据库
+
+- [answerM\pys\test\ErroTest.ipynb](answerM\pys\test\ErroTest.ipynb)
+- [answerM\pys\DAO\connPool.py](answerM\pys\DAO\connPool.py)
+
 # 后续开发工作展望
 
 1. 提前保存向量化后的文本，杜绝每次使用时都进行一次向量化的操作，节省时间
-2. 使GPT接收客户已买物品清单，方便进行订单查询、商品推荐等

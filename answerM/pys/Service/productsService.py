@@ -1,7 +1,6 @@
 import sys
 sys.path.append("..")
 from DAO.productsDAO import productsDAOImpl
-import json
 class productsServiceImpl:
     def __init__(self):
         self.productsDAO = productsDAOImpl()

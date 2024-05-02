@@ -1,5 +1,5 @@
-from DAO.ordersDAO import ordersDAOImpl
-import json
-instance = ordersDAOImpl()
-res = instance.getUserOrdersDetail(1)
+from Service.qaService import qaServiceImpl
+import pandas as pd
+instance = qaServiceImpl()
+res = instance.getPageQa(600)
 print(res)

@@ -4,6 +4,7 @@ from api.loginApi import loginApi
 from api.chatApi import chatApi
 from api.productsApi import prodApi
 from api.ordersApi import ordersApi
+from api.qaApi import qaApi
 
 from config import Config
 
@@ -15,6 +16,7 @@ app.register_blueprint(loginApi)
 app.register_blueprint(chatApi)
 app.register_blueprint(prodApi)
 app.register_blueprint(ordersApi)
+app.register_blueprint(qaApi)
 
 # 启动实施（只在当前模块运行）
 if __name__ == '__main__':
