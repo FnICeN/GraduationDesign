@@ -55,6 +55,11 @@ def changeMode():
         return json.dumps({"success" : True})
     elif data == 5:
         m.model = NetExecutor("E:/毕业设计", False)
+        # 预先进行一次预测，以使得SentenceVecPersis类中的句向量持久化
+        m.model.LSTMPredict("预先预测", 
+                            "E:/毕业设计/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 
+                            "E:/毕业设计/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth", 
+                            False)
         return json.dumps({"success" : True})
     return json.dumps({"success" : False})
 
