@@ -24,7 +24,7 @@ class qaServiceImpl:
         di = qaDataInfo()
         df = pd.DataFrame(self.qaDAO.getAllQA())
         # 去除df中的id列
-        df = df.drop(df.columns[0], axis=1)
+        # df = df.drop(df.columns[0], axis=1)
         di.data = df
     def getQaLength(self):
         di = qaDataInfo()
@@ -34,3 +34,9 @@ class qaServiceImpl:
         di = qaDataInfo()
         data = di.data[(int(page) - 1) * int(limit): (int(page) * int(limit))]
         return data.to_dict(orient='records')
+    def addQa(self, q, a):
+        return self.qaDAO.addQa(q, a) == 1
+    def deleteQaById(self, id):
+        return self.qaDAO.deleteQaById(id) == 1
+    def updateQaById(self, id, q, a):
+        return self.qaDAO.updateQaById(id, q, a) == 1

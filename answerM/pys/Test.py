@@ -1,5 +1,7 @@
-from Service.qaService import qaServiceImpl
+from DAO.qaDAO import qaDAOImpl
 import pandas as pd
-instance = qaServiceImpl()
-res = instance.getPageQa(600)
+instance = qaDAOImpl()
+# res = instance.addQa("q", "a")
+res = instance.deleteQaById(5997)
+
 print(res)
