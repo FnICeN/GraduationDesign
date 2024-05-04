@@ -8,14 +8,14 @@
 
 由GPT回答问题，将GPT答案作为标准与三个备选答案对比，以相似度较高者作为GPT助选的答案。若相似度都很低，则直接使用GPT的答案作为回答
 
-相似度计算过程沿用四类已知的文本匹配算法，效果各有优劣
+查询订单相关时，若GPT认为该问题与订单相关，则LSTM给出的回答必不正确，此时直接采用GPT的答案作为回答
+
+相似度计算过程沿用四类已知的文本匹配算法，效果各有优劣。默认使用VSM-TFIDF算法
 
 # 所有需要配置的文件
 
 ## 配置路径
 
-- [answerM\pys\DAO\qaDAO.py](answerM\pys\DAO\qaDAO.py)
-- [answerM\pys\api\chatApi.py](answerM\pys\api\chatApi.py)
 - [answerM\pys\test\ErroTest.ipynb](answerM\pys\test\ErroTest.ipynb)
 
 ## 配置数据库

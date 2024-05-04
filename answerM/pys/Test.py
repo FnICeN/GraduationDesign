@@ -1,7 +1,6 @@
-from DAO.qaDAO import qaDAOImpl
-import pandas as pd
-instance = qaDAOImpl()
+from Service.ordersService import ordersServiceImpl
+import json
+instance = ordersServiceImpl()
 # res = instance.addQa("q", "a")
-res = instance.deleteQaById(5997)
-
+res = instance.showCurUserAllOrders()
 print(res)

@@ -35,7 +35,7 @@ class NetExecutor:
         lstm.eval()
         evaluateModel(self.rootpath, lstm, self.device, testdata_path, batch_size)
 
-    def LSTMPredict(self, question, ans_path, weight_path, GPTassis : bool):
+    def LSTMPredict(self, question, ans_path, weight_path, GPTassis : bool, orders : list = None):
         lstm = LSTMModel(self.device, self.rootpath).to(self.device)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
         print("加载模型成功")
@@ -53,10 +53,10 @@ class NetExecutor:
                                         'orders' : 
                                             [
                                                 {
-                                                'order_id' : '订单号',
-                                                'product' : '产品名称',
+                                                'orderid' : '订单号',
+                                                'productname' : '产品名称',
                                                 'price' : '价格',
-                                                'status' : '状态',
+                                                'sta' : '状态',
                                                 },
                                                 ...
                                             ]
@@ -68,8 +68,6 @@ class NetExecutor:
                                             'about_order' : 问题是否是关于用户订单的问题，是则为true，否则为false
                                         }
                                         """)
-                    orders = [{'order_id': '123456', 'product': '手机', 'price': '1999', 'status': '已发货'}, 
-                            {'order_id': '123457', 'product': '电脑', 'price': '5999', 'status': '已签收'}]
                     gptRes = self.gpt.getGPTSeveralResponses(
                         {
                             "question": question,

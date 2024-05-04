@@ -4,7 +4,6 @@ class SentenceVecPersis:
         if SentenceVecPersis._initialized:
             return
         print("句向量持久化类初始化...")
-        self.q_v = None
         self.a_v = None
         SentenceVecPersis._initialized = True
     def __new__(cls):

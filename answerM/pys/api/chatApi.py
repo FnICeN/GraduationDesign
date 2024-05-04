@@ -8,6 +8,9 @@ from BM25Algorithm import BM25
 from VSM_tfidf_Algorithm import VSM_tfidf
 from VSM_word2vec_Algorithm import VSM_word2vec
 from LDemo import NetExecutor
+from Service.ordersService import ordersServiceImpl
+from utils.VecPersistence import SentenceVecPersis
+from config import Config
 
 class ChatModel():
     _initialed = False
@@ -17,7 +20,8 @@ class ChatModel():
             return
         print("ChatModel初始化...")
         self.model = None
-        self.df = pd.read_csv("E:/毕业设计/GraduationDesign/语料库/客服语料/整理后/[1-6].csv")
+        config = Config()
+        self.df = pd.read_csv(f"{config.rootpath}/GraduationDesign/语料库/客服语料/整理后/{config.answerFileName}")
         self.all_answer = self.df.iloc[:,1]
         ChatModel._initialed = True
     def __new__(cls):
@@ -31,34 +35,37 @@ chatApi = Blueprint("chatApi", __name__)
 @chatApi.route('/clear', methods=['GET'])
 def clear():
     m = ChatModel()
+    svp = SentenceVecPersis()
     m.model = None
+    svp.a_v = None
     return json.dumps({"success" : True})
 
 @chatApi.route('/changeMode', methods=['POST'])
 def changeMode():
     print("changeMode")
     m = ChatModel()
+    config = Config()
     # 获取请求数据
     data = json.loads(request.get_data(as_text=True))
     # 进行switch-case
     if data == 1:
-        m.model = Bow("E:/毕业设计", m.df)
+        m.model = Bow(config.rootpath, m.df)
         return json.dumps({"success" : True})
     elif data == 2:
-        m.model = BM25("E:/毕业设计", m.df)
+        m.model = BM25(config.rootpath, m.df)
         return json.dumps({"success" : True})
     elif data == 3:
-        m.model = VSM_tfidf("E:/毕业设计", m.df)
+        m.model = VSM_tfidf(config.rootpath, m.df)
         return json.dumps({"success" : True})
     elif data == 4:
-        m.model = VSM_word2vec("E:/毕业设计", m.df, False)
+        m.model = VSM_word2vec(config.rootpath, m.df, False)
         return json.dumps({"success" : True})
     elif data == 5:
-        m.model = NetExecutor("E:/毕业设计", False)
+        m.model = NetExecutor(config.rootpath, False)
         # 预先进行一次预测，以使得SentenceVecPersis类中的句向量持久化
         m.model.LSTMPredict("预先预测", 
-                            "E:/毕业设计/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 
-                            "E:/毕业设计/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth", 
+                            f"{config.rootpath}/GraduationDesign/语料库/客服语料/整理后/{config.answerFileName}", 
+                            f"{config.rootpath}/GraduationDesign/answerM/models/{config.modelPath}", 
                             False)
         return json.dumps({"success" : True})
     return json.dumps({"success" : False})
@@ -92,10 +99,15 @@ def getRes():
         return json.dumps({"success" : True, "data" : {"response" : answer}})
     
     elif data["mode"] == 5:
+        config = Config()
+        osi = ordersServiceImpl()
+        usellm = data["usellm"]
+        if usellm:
+            orders = osi.showCurUserAllOrders()
         res = m.model.LSTMPredict(data["question"], 
-                            "E:/毕业设计/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 
-                            "E:/毕业设计/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth", 
-                            data["usellm"])
+                            f"{config.rootpath}/GraduationDesign/语料库/客服语料/整理后/{config.answerFileName}", 
+                            f"{config.rootpath}/GraduationDesign/answerM/models/{config.modelPath}", 
+                            GPTassis = usellm, orders = orders)
         return json.dumps({"success" : True, "data" : {"response" : res}})
         
     return json.dumps({"success" : True, "data" : {"response" : "尚未配置该模式回复逻辑！"}})

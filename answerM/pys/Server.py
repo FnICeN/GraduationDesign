@@ -21,4 +21,7 @@ app.register_blueprint(qaApi)
 # 启动实施（只在当前模块运行）
 if __name__ == '__main__':
     c = Config()
+    c.rootpath = "E:/毕业设计"
+    c.answerFileName = "[1-6].csv"
+    c.modelPath = "0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth"
     app.run()
