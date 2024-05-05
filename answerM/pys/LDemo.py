@@ -16,27 +16,27 @@ class NetExecutor:
             self.device = torch.device('cpu')
         
     def LSTMTrain(self, data_path, batch_size, epoch, shuffle_neg : bool):
-        lstm = LSTMModel(device = self.device, root_path = self.rootpath).to(self.device)
+        lstm = LSTMModel(device = self.device, root_path = self.rootpath, layers=1).to(self.device)
         # lstm.train("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 128, 100)
         lstm.train()
         lstm.trainStart(data_path, batch_size, epoch, shuffle_neg)
     
     def LSTMEval(self, testdata_path : str, weight_path : str, batch_size : int):
         # 加载模型
-        lstm = LSTMModel(self.device, self.rootpath).to(self.device)
+        lstm = LSTMModel(self.device, self.rootpath, layers=1).to(self.device)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
         print("加载模型成功")
-        lstm.lstm.eval()
+        lstm.eval()
         evaluateModel(self.rootpath, lstm, self.device, testdata_path, batch_size)
 
     def LSTMPredict(self, question, ans_path, weight_path, GPTassis : bool):
-        lstm = LSTMModel(self.device, self.rootpath).to(self.device)
+        lstm = LSTMModel(self.device, self.rootpath, layers=1).to(self.device)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
         print("加载模型成功")
-        lstm.lstm.eval()
+        lstm.eval()
         predict(self.rootpath, question, ans_path, lstm, self.device, GPTassis)
 
 executor = NetExecutor("D:", False)
-# executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/LSTMModel_weights.pth", 64)
-executor.LSTMPredict("我该如何修改我的账户密码？", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/256b200e_shuffle/LSTMModel_weights.pth", True)
+# executor.LSTMEval("D:/GraduationDesign/语料库/客服语料/整理后/7.csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/128b200e_shuffle/LSTMModel_weights.pth", 64)
+executor.LSTMPredict("你们老板电话是多少？我要投诉你们！", "D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", "D:/GraduationDesign/answerM/models/0.1M-1layer/new/128b200e_shuffle/LSTMModel_weights.pth", True)
 # executor.LSTMTrain("D:/GraduationDesign/语料库/客服语料/整理后/[1-6].csv", 64, 1, False)

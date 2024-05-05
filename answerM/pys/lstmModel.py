@@ -10,10 +10,10 @@ import trainRela.MyLoss as ml
 M = 0.1
 GPT_M = 0.4
 class LSTMModel(nn.Module):
-    def __init__(self, device, root_path, input_size = 200, hidden_size = 200, output_size = 200):
+    def __init__(self, device, root_path, input_size = 200, hidden_size = 200, output_size = 200, layers = 1):
         super(LSTMModel, self).__init__()
         self.hidden_size = hidden_size
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=layers, batch_first=True)
         self.hidden2out = nn.Linear(hidden_size, output_size)
         self.device = device
         self.rootpath = root_path
@@ -24,7 +24,6 @@ class LSTMModel(nn.Module):
         return output
     def trainStart(self, data_path, batch_size, epochs, shuffle_neg):
         # 训练时取每个时间步的输出计算loss反向传播
-        # criterion = nn.CosineEmbeddingLoss(margin = M)
         criterion = ml.Margin_Cosine_ReductionLoss(M)
         optimizer = torch.optim.SGD(self.parameters(), lr=0.1)
         dataset = TrainDataset(data_path, self.rootpath)
@@ -48,20 +47,23 @@ class LSTMModel(nn.Module):
                 ans_input = ans_input.to(self.device)
                 neg_input = neg_input.to(self.device)
                 # 执行预测
-                q_output, (_, _) = self.lstm(q_input)
-                ans_output, (_, _) = self.lstm(ans_input)
-                neg_output, (_, _) = self.lstm(neg_input)
+                # q_output, (_, _) = self.lstm(q_input)
+                # ans_output, (_, _) = self.lstm(ans_input)
+                # neg_output, (_, _) = self.lstm(neg_input)
+                q_output = self(q_input)
+                ans_output = self(ans_input)
+                neg_output = self(neg_input)
                 # print("q_output:", q_output.shape)
                 # 在全连接层处理隐藏层输出
-                q_output = self.hidden2out(q_output)
-                ans_output = self.hidden2out(ans_output)
-                neg_output = self.hidden2out(neg_output)
+                # q_output = self.hidden2out(q_output)
+                # ans_output = self.hidden2out(ans_output)
+                # neg_output = self.hidden2out(neg_output)
                 # print(q_output.shape)
                 # 将q_output由三维转为二维，(batch_size, hidden_size)或者可认为(batch_size, output_size)
                 # 每个句子里的20个向量相加，求均值，得句向量
-                q_output = torch.mean(q_output, dim=1)
-                ans_output = torch.mean(ans_output, dim=1)
-                neg_output = torch.mean(neg_output, dim=1)
+                # q_output = torch.mean(q_output, dim=1)
+                # ans_output = torch.mean(ans_output, dim=1)
+                # neg_output = torch.mean(neg_output, dim=1)
                 # print(q_output.shape)
                 losses, loss = criterion(q_output, ans_output, neg_output)
                 # 计算正确率

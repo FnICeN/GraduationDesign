@@ -26,7 +26,6 @@ class VSM_word2vec:
         if rebuild:
             m = word2vec.Word2Vec(self.docs, sg=0, vector_size=200, window=3, min_count=1, workers=8)
             m.save(rootpath + '/GraduationDesign/answerM/models/word2vec.model')
-
         try:
             self.model = word2vec.Word2Vec.load(rootpath + '/GraduationDesign/answerM/models/word2vec.model')
         except:

@@ -9,7 +9,7 @@ class GPTChat:
         self.prompt = prompt
         self.client = OpenAI(
             api_key='sk-caDWGp0Ccg7ZULWLE7E799995f09484fBaAdB7012886B753',
-            base_url="https://api.gpt.ge/v1/",
+            base_url="https://api.v36.cm/v1/",
         )
         self.history = []
         self.history.append({"role": "system", "content": self.prompt})
@@ -78,12 +78,13 @@ gpt = GPTChat("""
               """)
 orders = [{'order_id': '123456', 'product': '手机', 'price': '1999', 'status': '已发货'}, 
           {'order_id': '123457', 'product': '电脑', 'price': '5999', 'status': '已签收'}]
-question = "订单号123456是什么货物？"
+question1 = "我购买的订单号123456是什么货物？帮我查询一下这个东西现在是什么状态"
+question2 = "这个东西的价格是多少？"
 res = None
 for _ in range(3):
     try:
         res = gpt.getGPTSeveralResponses({
-            'question': question,
+            'question': question1,
             'orders': orders
         })
         print(res)
@@ -93,7 +94,7 @@ for _ in range(3):
 for _ in range(3):
     try:
         res = gpt.getGPTSeveralResponses({
-            'question': "这个货物的价格是多少？",
+            'question': question2,
             'orders': orders
         })
         print(res)
