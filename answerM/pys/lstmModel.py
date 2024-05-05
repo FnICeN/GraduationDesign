@@ -3,12 +3,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from utils.DataProcess import TrainDataset, PredictDataset
 from utils.get_sentence_vec import GetSentenceVec
-from LLMRela.ChatGPTDemo import GPTChat
-from VSM_tfidf_Algorithm import VSM_tfidf
 import trainRela.MyLoss as ml
 
 M = 0.1
-GPT_M = 0.4
 class LSTMModel(nn.Module):
     def __init__(self, device, root_path, input_size = 200, hidden_size = 200, output_size = 200, layers = 1):
         super(LSTMModel, self).__init__()
@@ -130,6 +127,10 @@ def evaluateModel(root_path : str, model : LSTMModel, device : torch.device, tes
     print("测试完成，平均测试正确率:", sum(acc_per_batch_record) / len(acc_per_batch_record))
 
 def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, device : torch.device, GPTassis : bool):
+    '''
+    根据问题预测答案
+    return: 预测的三个备选答案
+    '''
     # 预测时取最后一个时间步的输出作为结果
     # 加载答案数据
     ans_dataset = PredictDataset(ans_path, rootpath)
@@ -168,41 +169,12 @@ def predict(rootpath : str, question : str, ans_path : str, model : LSTMModel, d
     print("答案一:", dedi_ans[0])
     print("答案二:", dedi_ans[1])
     print("答案三:", dedi_ans[2])
+    return dedi_ans
     # # 取相似度最高的答案
     # max_index = torch.argmax(sim_list)
     # print("问题:", question)
     # print("答案:", ans_dataset.all_answers[max_index])
-    # 若启用GPT辅助
-    if GPTassis:
-        for i in range(5):
-            try:
-                gpt = GPTChat("你是一个电商平台的智能客服答疑助手，你会收到JSON格式的消息，你的输出格式为：{\"gen_ans\" : \"对问题自拟一个回答\"}")
-                gptRes = gpt.getGPTResponse(
-                    {
-                        "question": question,
-                    }
-                )
-                break
-            except:
-                if i != 4:
-                    print("GPT请求失败，重试（第{}次）...".format(i + 1))
-                else:
-                    print("GPT请求失败，重试5次仍失败，退出")
-                    return
-        gptRes = gptRes["gen_ans"]
-        print("GPT辅助回答:", gptRes)
-        # 使用VSM-tfidf判断相似度
-        vsm = VSM_tfidf(rootpath, dedi_ans)
-        prob_index = vsm.getAnswerIndex(gptRes)
-        final_ans = ""
-        print(prob_index)
-        if prob_index[0][0] > GPT_M:
-            final_ans = dedi_ans[prob_index[0][1]]
-            print("GPT助选，选择合理答案")
-        else:
-            final_ans = gptRes
-            print("GPT认为不存在合理答案，使用自拟答案")
-        print("最终回答：", final_ans)
+    
 
 
         # 使用wod2vec判断相似度

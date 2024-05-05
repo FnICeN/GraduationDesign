@@ -2,6 +2,7 @@ import pandas as pd
 from utils.get_sentence_vec import GetSentenceVec
 from random import randint
 from torch.utils.data import Dataset
+from utils.VecPersistence import SentenceVecPersis
 class TrainDataset(Dataset):
     def __init__(self, path, root_path):
         self.df = pd.read_csv(path)
@@ -35,12 +36,15 @@ class TrainDataset(Dataset):
     
 class PredictDataset(Dataset):
     def __init__(self, path, root_path):
+        svp = SentenceVecPersis()
         self.df = pd.read_csv(path)
         self.all_answers = []
         for doc in self.df.iloc[:,1]:
             self.all_answers.append(doc.strip())
         # 向量化，得到句向量列表，维度为(句子数量, 20, 200)
-        self.a_v = GetSentenceVec(self.all_answers, root_path).get_sentences_vec(20)
+        if svp.a_v is None:
+            svp.a_v = GetSentenceVec(self.all_answers, root_path).get_sentences_vec(20)
+        self.a_v = svp.a_v
     def __len__(self):
         return len(self.df)
     def __getitem__(self, idx):

@@ -24,13 +24,12 @@ class Bow:
                 docs.append(temp_list)
         # 生成词典
         self.dic = corpora.Dictionary(docs)
+        print(self.dic.token2id)
         # 生成语料库
         corpus = [self.dic.doc2bow(doc) for doc in docs]
-        # 得到tfidf模型
-        self.tfidf = models.TfidfModel(corpus)
         # 计算特征数、相似度索引（其实是得到一个字典，可以查到相似度）
         featureNum=len(self.dic.token2id.keys())
-        self.index = similarities.SparseMatrixSimilarity(self.tfidf[corpus], num_features=featureNum)
+        self.index = similarities.SparseMatrixSimilarity(corpus, num_features=featureNum)
         
     def getProbAnsIndex(self, sample : str):
         '''
@@ -40,17 +39,18 @@ class Bow:
         # 测试组分词，转词袋
         sample_doc = [word for word in jieba.cut(sample)]
         sample_corpus = self.dic.doc2bow(sample_doc)
-        sim = self.index[self.tfidf[sample_corpus]]
+        sim = self.index[sample_corpus]
         prob_index = sorted(enumerate(sim), key=lambda item: -item[1])[:3]
         print("\n=================Bow=================")
         return prob_index   # (index, similarity)
 
 
-# df = pd.read_csv("D:/GraduationDesign/语料库/客服语料/整理后/1.csv")
-# bow = Bow("D:", df)
-# index = bow.getProbAnsIndex("买的货物有问题怎么办？")
+# df = pd.read_csv("E:/毕业设计/GraduationDesign/语料库/客服语料/整理后/1.csv")
+# bow = Bow("E:/毕业设计", df)
+# q = "如何账户密码？"
+# index = bow.getProbAnsIndex(q)
 # all_answer = df.iloc[:,1]
-# print("问题：", "买的货物有问题怎么办？")
+# print("问题：", q)
 # print("匹配到问题：", df.iloc[index[0][0],0])
 # print("回答：", all_answer[index[0][0]])
 

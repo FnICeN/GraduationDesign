@@ -19,12 +19,12 @@ class GPTChat:
             response_format = { "type": "json_object" },
             messages = [
                 {"role": "system", "content": self.prompt},
-                {"role": "user", "content": json.dumps(question)},
+                {"role": "user", "content": json.dumps(question, ensure_ascii=False)},
             ], 
         )
         return json.loads(resp.choices[0].message.content)
     def getGPTSeveralResponses(self, question : list) -> dict:
-        self.history.append({"role": "user", "content": json.dumps(question)})
+        self.history.append({"role": "user", "content": json.dumps(question, ensure_ascii=False)})
         resp = self.client.chat.completions.create(
             model = "gpt-3.5-turbo-0125",
             response_format = { "type": "json_object" },
@@ -57,48 +57,47 @@ class GPTChat:
 # })
 # print(res)
 
-gpt = GPTChat("""
-              你是一个电商平台客服，你会收到JSON格式的消息，消息格式为：
-              {
-              'question' : '用户的问题',
-              'orders' : 
-                [
-                    {
-                        'order_id' : '订单号',
-                        'product' : '产品名称',
-                        'price' : '价格',
-                        'status' : '状态',
-                    }, 
-                    ...
-                ]
-              }
-              你需要根据用户的问题，必要时可以参考用户的订单信息，回答用户的问题，回答尽量简洁一些。
-              你需要输出JSON格式的消息，为：
-              {'gen_ans' : '你的回答'}
-              """)
-orders = [{'order_id': '123456', 'product': '手机', 'price': '1999', 'status': '已发货'}, 
-          {'order_id': '123457', 'product': '电脑', 'price': '5999', 'status': '已签收'}]
-question1 = "我购买的订单号123456是什么货物？帮我查询一下这个东西现在是什么状态"
-question2 = "这个东西的价格是多少？"
-res = None
-for _ in range(3):
-    try:
-        res = gpt.getGPTSeveralResponses({
-            'question': question1,
-            'orders': orders
-        })
-        print(res)
-        break
-    except:
-        print("retrying...")
-for _ in range(3):
-    try:
-        res = gpt.getGPTSeveralResponses({
-            'question': question2,
-            'orders': orders
-        })
-        print(res)
-        break
-    except:
-        print("retrying...")
+# gpt = GPTChat("""
+#               你是一个电商平台客服，你会收到JSON格式的消息，消息格式为：
+#               {
+#               'question' : '用户的问题',
+#               'orders' : 
+#                 [
+#                     {
+#                         'order_id' : '订单号',
+#                         'product' : '产品名称',
+#                         'price' : '价格',
+#                         'status' : '状态',
+#                     }, 
+#                     ...
+#                 ]
+#               }
+#               你需要根据用户的问题，必要时可以参考用户的订单信息，回答用户的问题，回答尽量简洁一些。
+#               你需要输出JSON格式的消息，为：
+#               {'gen_ans' : '你的回答'}
+#               """)
+# orders = [{'order_id': '123456', 'product': '手机', 'price': '1999', 'status': '已发货'}, 
+#           {'order_id': '123457', 'product': '电脑', 'price': '5999', 'status': '已签收'}]
+# question = "订单号123456是什么货物？"
+# res = None
+# for _ in range(3):
+#     try:
+#         res = gpt.getGPTSeveralResponses({
+#             'question': question,
+#             'orders': orders
+#         })
+#         print(res)
+#         break
+#     except:
+#         print("retrying...")
+# for _ in range(3):
+#     try:
+#         res = gpt.getGPTSeveralResponses({
+#             'question': "这个货物的价格是多少？",
+#             'orders': orders
+#         })
+#         print(res)
+#         break
+#     except:
+#         print("retrying...")
 
