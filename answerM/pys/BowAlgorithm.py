@@ -24,7 +24,6 @@ class Bow:
                 docs.append(temp_list)
         # 生成词典
         self.dic = corpora.Dictionary(docs)
-        print(self.dic.token2id)
         # 生成语料库
         corpus = [self.dic.doc2bow(doc) for doc in docs]
         # 计算特征数、相似度索引（其实是得到一个字典，可以查到相似度）

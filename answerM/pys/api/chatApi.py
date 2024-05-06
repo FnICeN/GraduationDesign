@@ -9,6 +9,7 @@ from VSM_tfidf_Algorithm import VSM_tfidf
 from VSM_word2vec_Algorithm import VSM_word2vec
 from LDemo import NetExecutor
 from Service.ordersService import ordersServiceImpl
+from Service.productsService import productsServiceImpl
 from utils.VecPersistence import SentenceVecPersis
 from config import Config
 
@@ -101,13 +102,17 @@ def getRes():
     elif data["mode"] == 5:
         config = Config()
         osi = ordersServiceImpl()
+        psi = productsServiceImpl()
         usellm = data["usellm"]
+        orders = None
+        products = None
         if usellm:
             orders = osi.showCurUserAllOrders()
+            products = psi.getAllProducts()
         res = m.model.LSTMPredict(data["question"], 
                             f"{config.rootpath}/GraduationDesign/语料库/客服语料/整理后/{config.answerFileName}", 
                             f"{config.rootpath}/GraduationDesign/answerM/models/{config.modelPath}", 
-                            GPTassis = usellm, orders = orders)
+                            GPTassis = usellm, orders = orders, products = products)
         return json.dumps({"success" : True, "data" : {"response" : res}})
         
     return json.dumps({"success" : True, "data" : {"response" : "尚未配置该模式回复逻辑！"}})

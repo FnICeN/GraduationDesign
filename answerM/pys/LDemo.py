@@ -35,9 +35,7 @@ class NetExecutor:
         lstm.eval()
         evaluateModel(self.rootpath, lstm, self.device, testdata_path, batch_size)
 
-    def LSTMPredict(self, question, ans_path, weight_path, GPTassis : bool, orders : list = None):
-        lstm = LSTMModel(self.device, self.rootpath).to(self.device)
-    def LSTMPredict(self, question, ans_path, weight_path, GPTassis : bool):
+    def LSTMPredict(self, question, ans_path, weight_path, GPTassis : bool, orders : list = None, products : list = None):
         lstm = LSTMModel(self.device, self.rootpath, layers=1).to(self.device)
         lstm.load_state_dict(torch.load(weight_path, map_location=self.device))
         print("加载模型成功")
@@ -62,18 +60,28 @@ class NetExecutor:
                                                 },
                                                 ...
                                             ]
+                                        'products' : 
+                                           [
+                                                {
+                                                'productid' : '产品编号',
+                                                'productname' : '产品名称',
+                                                'price' : '价格',
+                                                },
+                                                ...
+                                           ]
                                         }
-                                        你需要根据用户的问题，必要时可以参考用户的订单信息，回答用户的问题，回答尽量简洁一些。
+                                        你需要根据用户的问题，必要时可以参考用户的订单信息或系统中已有的商品信息，回答用户的问题，回答尽量简洁一些。
                                         你需要输出JSON格式的消息，为：
                                         {
                                             'gen_ans' : '你的回答'
-                                            'about_order' : 问题是否是关于用户订单的问题，是则为true，否则为false
+                                            'aboutOrderOrRecommend' : 问题是否是关于用户订单的问题或关于向用户推荐商品的问题，是则为true，否则为false
                                         }
                                         """)
                     gptRes = self.gpt.getGPTSeveralResponses(
                         {
                             "question": question,
-                            "orders": orders
+                            "orders": orders,
+                            "products": products
                         }
                     )
                     break
@@ -84,13 +92,13 @@ class NetExecutor:
                         print("GPT请求失败，重试5次仍失败，退出")
                         return
             gptRes_text = gptRes["gen_ans"]
-            gptRes_order = gptRes["about_order"]
+            gptRes_choose = gptRes["aboutOrderOrRecommend"]
             # gptRes_text有概率为unicode编码，需要转换
             print("gptRes的类型：", type(gptRes_text), "gptRes的值：", gptRes_text)
             gptRes_text = json.loads('"' + gptRes_text + '"', strict=False)
             print("GPT辅助回答:", gptRes_text)
-            if gptRes_order == True:
-                print("GPT认为问题是关于订单的问题，直接使用GPT回答")
+            if gptRes_choose == True:
+                print("GPT认为问题是关于订单或推荐的问题，直接使用GPT回答")
                 final_ans = gptRes_text
                 return final_ans
             # 使用VSM-tfidf判断相似度
