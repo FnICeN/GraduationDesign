@@ -35,8 +35,10 @@ class userServiceImpl:
             return json.dumps(res)
         else:
             return json.dumps({"success" : succ, "data" : None})
-    def addUser(self, username, password, nickname):
-        self.userDAO.addUser(username, password, nickname)
+    def addUser(self, nickname, password):
+        res = self.userDAO.addUser(nickname, password)
+        print("service完成")
+        return res == 1
     def deleteUserById(self, userid):
         return self.userDAO.deleteUserById(userid)
     def getCurUserInfo(self):

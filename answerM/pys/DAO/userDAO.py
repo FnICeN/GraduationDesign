@@ -23,12 +23,13 @@ class userDAOImpl:
         result = cursor.fetchall()
         self.sqlPool.closeConn(conn, cursor)
         return result
-    def addUser(self, username, password):
+    def addUser(self, nickname, password):
         conn, cursor = self.sqlPool.getConn()
         sql = "insert into user(nickname, password) values(%s, %s)"
-        cursor.execute(sql, (username, password))
+        cursor.execute(sql, (nickname, password))
         conn.commit()
         self.sqlPool.closeConn(conn, cursor)
+        return cursor.rowcount
     def deleteUserById(self, userid):
         conn, cursor = self.sqlPool.getConn()
         sql = "delete from user where userid = %s"
