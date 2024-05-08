@@ -18,11 +18,16 @@ class userServiceImpl:
         user = self.userDAO.getUserLogin(username, password)
         succ = (len(user) == 1)
         if succ:
+            roles = None
+            if username == "userA":
+                roles = ["admin"]
+            else:
+                roles = ["common"]
             res = {
             "success": succ,
             "data": {
                 "username": f"{username}",
-                "roles": ["admin"],
+                "roles": roles,
                 "accessToken": "eyJhbGciOiJIUzUxMiJ9.admin",
                 "refreshToken": "eyJhbGciOiJIUzUxMiJ9.adminRefresh",
                 "expires": "2030/10/30 00:00:00"
