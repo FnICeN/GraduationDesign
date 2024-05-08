@@ -16,12 +16,12 @@
 
 ## 配置路径
 
-- [answerM\pys\test\ErroTest.ipynb](answerM\pys\test\ErroTest.ipynb)
+- [answerM/pys/Server.py.example](answerM/pys/Server.py.example)
 
 ## 配置数据库
 
-- [answerM\pys\test\ErroTest.ipynb](answerM\pys\test\ErroTest.ipynb)
-- [answerM\pys\DAO\connPool.py](answerM\pys\DAO\connPool.py)
+- [answerM/pys/test/ErroTest.ipynb](answerM/pys/test/ErroTest.ipynb)
+- [answerM/pys/DAO/connPool.py.example](answerM/pys/DAO/connPool.py.example)
 
 # 后续开发工作展望
 

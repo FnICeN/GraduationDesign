@@ -22,10 +22,18 @@ class productsDAOImpl:
         cursor.execute(sql, (productname, price))
         conn.commit()
         self.sqlPool.closeConn(conn, cursor)
+        return cursor.rowcount
     def deleteProductById(self, productid):
         conn, cursor = self.sqlPool.getConn()
         sql = "delete from products where productid = %s"
         cursor.execute(sql, productid)
+        conn.commit()
+        self.sqlPool.closeConn(conn, cursor)
+        return cursor.rowcount
+    def updateProduct(self, productid, productname, price):
+        conn, cursor = self.sqlPool.getConn()
+        sql = "update products set productname = %s, price = %s where productid = %s"
+        cursor.execute(sql, (productname, price, productid))
         conn.commit()
         self.sqlPool.closeConn(conn, cursor)
         return cursor.rowcount

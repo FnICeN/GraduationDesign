@@ -19,3 +19,24 @@ def buyProduct():
     osi = ordersServiceImpl()
     res = osi.addOrder(data['productid'])
     return json.dumps({"success" : res})
+
+@prodApi.route("/addProduct", methods=['POST'])
+def addProduct():
+    data = json.loads(request.get_data(as_text=True))
+    psi = productsServiceImpl()
+    res = psi.addProduct(data['productname'], data['price'])
+    return json.dumps(res)
+
+@prodApi.route("/deleteProduct", methods=['POST'])
+def deleteProduct():
+    data = json.loads(request.get_data(as_text=True))
+    psi = productsServiceImpl()
+    res = psi.deleteProductById(data['productid'])
+    return json.dumps(res)
+
+@prodApi.route("/updateProduct", methods=['POST'])
+def updateProduct():
+    data = json.loads(request.get_data(as_text=True))
+    psi = productsServiceImpl()
+    res = psi.updateProduct(data['productid'], data['productname'], data['price'])
+    return json.dumps(res)

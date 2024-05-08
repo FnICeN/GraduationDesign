@@ -13,6 +13,11 @@ class productsServiceImpl:
         all = self.productsDAO.getAllProducts()
         return all
     def addProduct(self, productname, price):
-        self.productsDAO.addProduct(productname, price)
+        res = self.productsDAO.addProduct(productname, price)
+        return res == 1
     def deleteProductById(self, productid):
-        return self.productsDAO.deleteProductById(productid)
+        res = self.productsDAO.deleteProductById(productid)
+        return res == 1
+    def updateProduct(self, productid, productname, price):
+        res = self.productsDAO.updateProduct(productid, productname, price)
+        return res == 1
