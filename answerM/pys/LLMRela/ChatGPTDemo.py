@@ -9,7 +9,7 @@ class GPTChat:
         self.prompt = prompt
         self.client = OpenAI(
             api_key='sk-caDWGp0Ccg7ZULWLE7E799995f09484fBaAdB7012886B753',
-            base_url="https://api.v36.cm/v1/",
+            base_url="https://api.gpt.ge/v1/",
         )
         self.history = []
         self.history.append({"role": "system", "content": self.prompt})

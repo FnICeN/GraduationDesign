@@ -10,10 +10,10 @@ class qaDAOImpl:
         result = cursor.fetchall()
         self.sqlPool.closeConn(conn, cursor)
         return result
-    def addQa(self, q, a):
+    def addQa(self, q, a, ins_user):
         conn, cursor = self.sqlPool.getConn()
-        sql = "INSERT INTO qa_data (q, a) VALUES (%s, %s)"
-        cursor.execute(sql, (q, a))
+        sql = "INSERT INTO qa_data (q, a, insert_user) VALUES (%s, %s, %s)"
+        cursor.execute(sql, (q, a, ins_user))
         conn.commit()
         self.sqlPool.closeConn(conn, cursor)
         # 返回受影响的行数

@@ -2,6 +2,7 @@ import pandas as pd
 import sys
 sys.path.append("..")
 from DAO.qaDAO import qaDAOImpl
+from config import Config
 
 class qaDataInfo:
     _initialised = False
@@ -21,6 +22,7 @@ class qaDataInfo:
 class qaServiceImpl:
     def __init__(self):
         self.qaDAO = qaDAOImpl()
+        self.config = Config()
         di = qaDataInfo()
         df = pd.DataFrame(self.qaDAO.getAllQA())
         # 去除df中的id列
@@ -35,7 +37,7 @@ class qaServiceImpl:
         data = di.data[(int(page) - 1) * int(limit): (int(page) * int(limit))]
         return data.to_dict(orient='records')
     def addQa(self, q, a):
-        return self.qaDAO.addQa(q, a) == 1
+        return self.qaDAO.addQa(q, a, self.config.userid) == 1
     def deleteQaById(self, id):
         return self.qaDAO.deleteQaById(id) == 1
     def updateQaById(self, id, q, a):
