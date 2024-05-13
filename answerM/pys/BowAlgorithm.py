@@ -36,7 +36,7 @@ class Bow:
         sample: 样本，即一个欲匹配的问题
         '''
         # 测试组分词，转词袋
-        sample_doc = [word for word in jieba.cut(sample)]
+        sample_doc = [word for word in jieba.cut(sample) if word not in self.stop_words and word !=' ']
         sample_corpus = self.dic.doc2bow(sample_doc)
         sim = self.index[sample_corpus]
         prob_index = sorted(enumerate(sim), key=lambda item: -item[1])[:3]

@@ -41,7 +41,6 @@ class VSM_word2vec:
         self.option_dict = {}
         for i, doc in enumerate(self.docs):
             doc_vec = []
-            count = 0
             for word in doc:
                 if word in self.dic:
                     doc_vec.append(self.model.wv[word])

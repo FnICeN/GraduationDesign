@@ -49,27 +49,17 @@ class VSM_tfidf:
         sample: 样本，即一个欲匹配的问题
         '''
         sample_list = [word for word in jieba.cut(sample) if word not in self.stop_words]
-        # print(sample_list)
         sample_corpus = self.dictionary.doc2bow(sample_list)
-        # print(sample_corpus)
         print("\n=================VSM_tfidf=================")
         return self.getProbAns(sample_corpus, self.option_corpus)
 
-    def sim(self, option_corpus, sample_corpus):
+    def sim(self, option_corpus, test_tfidf, vocs):
         '''
-        函数接收两个二维corpus[(bag_index, frequency), ...]
+        函数接收二维corpus[(bag_index, frequency), ...]和所有词列表vocs，返回两个corpus的相似度
         option_corpus: 某个备选项的corpus
-        sample_corpus: 需要被比较（作为问题）的corpus
         '''
-        vocs = set()
-        for i in option_corpus:
-            vocs.add(i[0])
-        for i in sample_corpus:
-            vocs.add(i[0])
-        vocs = list(vocs)
         # corpus计算tfidf
         doc_tfidf = self.tfidf[option_corpus]
-        test_tfidf = self.tfidf[sample_corpus]
         # 将tfidf转换为字典形式，方便查找
         doc_tfidf_dict = {}
         test_tfidf_dict = {}
@@ -92,16 +82,27 @@ class VSM_tfidf:
     def getProbAns(self, sample_corpus, option_corpus):
         # 逐个比较，选出前三最相似者的相似度及索引
         res = []
+        sample_tfidf = self.tfidf[sample_corpus]
+        print("样本tfidf:", sample_tfidf)
+        # 获取所有词
+        vocs = set()
+        for i in option_corpus:
+            for j in i:
+                vocs.add(j[0])
+        for i in sample_corpus:
+            vocs.add(i[0])
+        vocs = list(vocs)
+        
         for i in range(len(option_corpus)):
-            res.append([self.sim(option_corpus[i], sample_corpus), i])
+            res.append([self.sim(option_corpus[i], sample_tfidf, vocs), i])
         res.sort(reverse=True)
         return res[:3]    # (similarity, index)
 
 
 # 读取客服数据
-# df = pd.read_csv("D:/GraduationDesign/语料库/客服语料/整理后/1.csv")
-# v = VSM_tfidf("D:", df)
-# l = v.getAnswerIndex("如何注册新账户啊？")
+# df = pd.read_csv("E:/毕业设计/GraduationDesign/语料库/客服语料/整理后/1.csv")
+# v = VSM_tfidf("E:/毕业设计", df)
+# l = v.getAnswerIndex("我想更改我的账户密码，怎么办？")
 # print(l)
 # all_answer = df.iloc[:,1]
 # print("匹配到问题：", df.iloc[l[0][1], 0])
