@@ -8,6 +8,7 @@ from BM25Algorithm import BM25
 from VSM_tfidf_Algorithm import VSM_tfidf
 from VSM_word2vec_Algorithm import VSM_word2vec
 from LDemo import NetExecutor
+from Service.userService import userServiceImpl
 from Service.ordersService import ordersServiceImpl
 from Service.productsService import productsServiceImpl
 from utils.VecPersistence import SentenceVecPersis
@@ -73,6 +74,7 @@ def changeMode():
 
 @chatApi.route('/getRes', methods=['POST'])
 def getRes():
+    usi = userServiceImpl()
     m = ChatModel()
     if m.model == None:
         return json.dumps({"success" : True, "data" : {"response" : "模型未初始化，请先选择匹配模式！"}})
@@ -82,21 +84,25 @@ def getRes():
     if data["mode"] == 1:
         index = m.model.getProbAnsIndex(data["question"])
         answer = m.all_answer[index[0][0]]
+        usi.userComplete()
         return json.dumps({"success" : True, "data" : {"response" : answer}})
     
     elif data["mode"] == 2:
         _, max_index = m.model.getProbAnsIndex(data["question"])
         answer = m.all_answer[max_index[0]]
+        usi.userComplete()
         return json.dumps({"success" : True, "data" : {"response" : answer}})
     
     elif data["mode"] == 3:
         index = m.model.getAnswerIndex(data["question"])
         answer = m.all_answer[index[0][1]]
+        usi.userComplete()
         return json.dumps({"success" : True, "data" : {"response" : answer}})
     
     elif data["mode"] == 4:
         index = m.model.getProbAnsIndex(data["question"])
         answer = m.all_answer[index[0]]
+        usi.userComplete()
         return json.dumps({"success" : True, "data" : {"response" : answer}})
     
     elif data["mode"] == 5:
@@ -113,6 +119,7 @@ def getRes():
                             f"{config.rootpath}/GraduationDesign/语料库/客服语料/整理后/{config.answerFileName}", 
                             f"{config.rootpath}/GraduationDesign/answerM/models/{config.modelPath}", 
                             GPTassis = usellm, orders = orders, products = products)
+        usi.userComplete()
         return json.dumps({"success" : True, "data" : {"response" : res}})
         
     return json.dumps({"success" : True, "data" : {"response" : "尚未配置该模式回复逻辑！"}})

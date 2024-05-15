@@ -13,6 +13,7 @@ class Config:
         self.sendOrReceiveCount = 0
         self.completeCount = 0
         self.userid = 0
+        self.role = ""
         self.rootpath = ""
         self.answerFileName = ""
         # 使用模型的路径（以*rootpath*/GraduationDesign/answerM/models为根目录的相对路径）

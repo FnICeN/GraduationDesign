@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from Service.qaService import qaServiceImpl
+from Service.userService import userServiceImpl
 import json
 
 qaApi = Blueprint("qaApi", __name__)
@@ -23,7 +24,10 @@ def getQa():
 def addQa():
     data = json.loads(request.get_data(as_text=True))
     qsi = qaServiceImpl()
+    usi = userServiceImpl()
     res = qsi.addQa(data['q'], data['a'])
+    if res:
+        usi.adminInsert()
     return json.dumps({"success": res})
 
 @qaApi.route('/delQa', methods=['POST'])

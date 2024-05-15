@@ -16,13 +16,23 @@ class userServiceImpl:
         return user[0]["nickname"]
     def Login(self, username, password):
         user = self.userDAO.getUserLogin(username, password)
-        succ = (len(user) == 1)
+        admin = self.userDAO.getAdminLogin(username, password)
+        succ = (len(user) == 1 or len(admin) == 1)
         if succ:
             roles = None
-            if username == "userA":
+            c = Config()
+            if len(admin) == 1:
                 roles = ["admin"]
+                c.userid = admin[0]["adminid"]
+                c.username = admin[0]["name"]
+                c.role = "admin"
+                print("admin, id:", c.userid, "name:", c.username)
             else:
                 roles = ["common"]
+                c.userid = user[0]["userid"]
+                c.username = user[0]["nickname"]
+                c.role = "common"
+                print("user, id:", c.userid, "name:", c.username)
             res = {
             "success": succ,
             "data": {
@@ -33,10 +43,6 @@ class userServiceImpl:
                 "expires": "2030/10/30 00:00:00"
                 }
             }
-            # 登录成功，将userid存入config
-            c = Config()
-            c.userid = user[0]["userid"]
-            c.username = user[0]["nickname"]
             return json.dumps(res)
         else:
             return json.dumps({"success" : succ, "data" : None})
@@ -65,6 +71,19 @@ class userServiceImpl:
             "completeCount": c.completeCount
         }
         return json.dumps({"success": True, "data": res})
+    
+    def userComplete(self):
+        c = Config()
+        if c.role != "common":
+            return
+        userid = c.userid
+        return self.userDAO.addUserCompleteNumber(userid) == 1
+    def adminInsert(self):
+        c = Config()
+        if c.role != "admin":
+            return
+        adminid = c.userid
+        return self.userDAO.addAdminInsertNumber(adminid) == 1
         
         
         
