@@ -17,6 +17,7 @@ app.register_blueprint(chatApi)
 app.register_blueprint(prodApi)
 app.register_blueprint(ordersApi)
 app.register_blueprint(qaApi)
+app.register_blueprint(historyApi)
 
 # 启动实施（只在当前模块运行）
 if __name__ == '__main__':
